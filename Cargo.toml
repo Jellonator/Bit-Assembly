@@ -1,0 +1,9 @@
+[package]
+
+name = "bit-asm"
+version = "0.0.1"
+authors = [ "Jellonator <jellonator00@gmail.com>" ]
+
+[dependencies]
+regex = "*"
+rust-gmp = "0.3.0"
