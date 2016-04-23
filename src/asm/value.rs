@@ -60,6 +60,19 @@ impl Value {
 		}
 	}
 
+	pub fn get_boolvec(&self, env: &Environment) -> Vec<bool> {
+		match *self {
+			Value::Bignum(ref num) => bignum_to_boolvec(num),
+			Value::Boolvec(ref vec) => vec.clone(),
+			Value::Pointer{..} => {
+				let size = self.get_ptr_size();
+				let pos = self.get_ptr_position(env);
+				let bits = env.slice(pos, pos + size);
+				bits.to_vec()
+			}
+		}
+	}
+
 	pub fn get_ptr_size(&self) -> usize {
 		match *self {
 			Value::Pointer{ref len, ..} => *len,
@@ -69,7 +82,7 @@ impl Value {
 
 	pub fn can_coerce(&self, new_size:usize) -> bool {
 		match *self {
-			Value::Pointer{ref len, ..} => new_size == *len,
+			Value::Pointer{ref len, ..} => *len <= new_size,
 			Value::Boolvec(ref vec) => vec.len() <= new_size,
 			Value::Bignum(ref num) => num.bit_length() <= new_size
 		}
@@ -96,7 +109,7 @@ impl Value {
 			let mut arg_i = 0;
 			let mut from_back = false;
 			for c in value.chars() {
-				let skip = i < 1 || i >= value.len() - 1;
+				let skip = i < 1 || i >= value.len() - 1 || c.is_whitespace();
 				i += 1;
 				if skip {continue};
 

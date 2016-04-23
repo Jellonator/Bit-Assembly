@@ -26,5 +26,5 @@ fn main() {
 	}
 
 	asm.run(&mut env);
-	env.print_bytes(8);
+	env.print_bytes( 32);
 }

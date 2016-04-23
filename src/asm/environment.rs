@@ -1,14 +1,17 @@
 extern crate gmp;
 use super::util::*;
 use std::cmp;
+use super::assembler::Assembler;
 
 pub struct Environment {
-	stack:Vec<bool>
+	stack: Vec<bool>,
+	callstack: Vec<usize>,
+	pub instruction: usize
 }
 
 impl Environment {
 	pub fn new() -> Environment {
-		Environment {stack: Vec::new()}
+		Environment {stack: Vec::new(), callstack: Vec::new(), instruction: 0}
 	}
 
 	pub fn stack_len(&self) -> usize {
@@ -49,5 +52,23 @@ impl Environment {
 
 	pub fn set_bits_bignum(&mut self, num: &gmp::mpz::Mpz, pos:usize, len:usize) {
 		self.set_bits_boolvec(&bignum_to_boolvec(num), pos, len);
+	}
+
+	pub fn call(&mut self, asm: &Assembler, name: &str) {
+		self.callstack.push(self.instruction);
+		self.instruction = *asm.labels.get(name).expect(
+			format!("No such label of name {}!", name).as_ref()
+		);
+	}
+
+	pub fn ret(&mut self) {
+		let pos = self.callstack.pop().expect("Attempt to return on empty call stack!");
+		self.instruction = pos;
+	}
+
+	pub fn goto(&mut self, asm: &Assembler, name: &str) {
+		self.instruction = *asm.labels.get(name).expect(
+			format!("No such label of name {}!", name).as_ref()
+		);
 	}
 }
