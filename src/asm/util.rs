@@ -34,6 +34,18 @@ pub fn boolvec_to_usize(vec:&[bool]) -> usize {
 	return ret;
 }
 
+pub fn boolvec_to_u8(vec:&[bool]) -> u8 {
+	let mut ret:u8 = 0;
+
+	for i in 0..vec.len() {
+		if vec[i]{
+			ret |= 1 << i;
+		}
+	}
+
+	return ret;
+}
+
 pub fn bignum_to_usize(num: &gmp::mpz::Mpz) -> usize {
 	let mut ret:usize = 0;
 

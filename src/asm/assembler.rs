@@ -8,17 +8,25 @@ use super::util::remove_comments;
 use std::collections::HashMap;
 
 pub struct Assembler {
-	code:Vec<Box<Instruction>>,
-	pub labels:HashMap<String, usize>,
-	defines:HashMap<String, String>
+	code:       Vec<Box<Instruction>>,
+	pub labels: HashMap<String, usize>,
+	defines:    Vec<(String, String)>,
+	pub ext_calls:  HashMap<String, Box<Fn(&[bool])>>
 }
 
 impl Assembler {
+	pub fn add_external_call<F>(&mut self, name: &str, external: F)
+		where F : 'static + Fn(&[bool]) {
+
+		self.ext_calls.insert(name.to_string(), Box::new(external));
+	}
+
 	pub fn new() -> Assembler {
 		Assembler {
-			code: Vec::new(),
-			labels: HashMap::new(),
-			defines: HashMap::new()
+			code:      Vec::new(),
+			labels:    HashMap::new(),
+			defines:   Vec::new(),
+			ext_calls: HashMap::new(),
 		}
 	}
 
@@ -46,7 +54,7 @@ impl Assembler {
 					let name = macro_args[1].to_string();
 					let args = macro_args[2..].join(" ");
 					println!("Defined '{}' as '{}'", name, args);
-					self.defines.insert(name, args);
+					self.defines.push((name, args));
 				},
 				name => panic!("Unknown macro name {}!", name)
 			}
@@ -63,7 +71,7 @@ impl Assembler {
 
 		//replace defines
 		for def in &self.defines {
-			line = line.replace(def.0, &def.1);
+			//line = line.replace::<&str>(def.0.as_ref(), &def.1.as_ref());
 		}
 
 		//parse name and arguments

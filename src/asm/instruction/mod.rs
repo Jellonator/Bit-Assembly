@@ -6,6 +6,7 @@ mod math;
 mod jump;
 mod mem;
 mod logic;
+mod sys;
 
 pub trait Instruction {
 	fn new(name: &str, arguments: &[&str]) -> Box<Instruction> where Self:Sized;
@@ -13,12 +14,15 @@ pub trait Instruction {
 }
 
 pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
+	println!("{}: {}", name, arguments.join(", "));
 	match name {
 		"push" => mem::Push::new(name, arguments),
 		"pop"  => mem::Pop::new(name, arguments),
 		"mov"  => mem::Mov::new(name, arguments),
-		"call" => mem::Call::new(name, arguments),
-		"ret"  => mem::Ret::new(name, arguments),
+
+		"call" => sys::Call::new(name, arguments),
+		"ret"  => sys::Ret::new(name, arguments),
+		"ext"  => sys::Ext::new(name, arguments),
 
 		"and"  => logic::And::new(name, arguments),
 		"or"   => logic::Or::new(name, arguments),
@@ -37,6 +41,7 @@ pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
 		"jle"  => jump::JumpLessEqual::new(name, arguments),
 		"jg"   => jump::JumpGreater::new(name, arguments),
 		"jge"  => jump::JumpGreaterEqual::new(name, arguments),
+
 		n => panic!("No such instruction {}!", n)
 	}
 }

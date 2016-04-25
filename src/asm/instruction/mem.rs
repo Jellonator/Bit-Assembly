@@ -7,9 +7,6 @@ pub struct Push(usize);
 pub struct Pop(usize);
 pub struct Mov{ to: Value, from: Value }
 
-pub struct Ret;
-pub struct Call(String);
-
 impl Instruction for Push {
 	fn new(name: &str, arguments: &[&str]) -> Box<Instruction> {
 		assert!(arguments.len() == 1, "Instruction 'push' requires 1 argument.");
@@ -54,31 +51,5 @@ impl Instruction for Mov {
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.from.get_bignum(&env);
 		env.set_bits_bignum(&val, pos, self.to.get_size());
-	}
-}
-
-impl Instruction for Ret {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 0, "Instruction 'ret' takes no arguments.");
-		Box::new(
-			Ret
-		)
-	}
-
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
-		env.ret();
-	}
-}
-
-impl Instruction for Call {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 1, "Instruction 'call' takes 1 argument.");
-		Box::new(
-			Call(args[0].to_string())
-		)
-	}
-
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
-		env.call(asm, self.0.as_ref());
 	}
 }
