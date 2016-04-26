@@ -18,6 +18,49 @@ pub struct Assembler {
 }
 
 impl Assembler {
+	fn parse_strings(&self, line:&String) -> String {
+		let mut new_line:String = String::new();
+		let mut is_literal_char = false;
+		let mut is_in_stringval = false;
+		for c in line.chars() {
+			if !is_in_stringval && c == '"' {
+				is_in_stringval = true;
+				is_literal_char = false;
+				new_line.push('b');
+				continue;
+			}
+			if is_in_stringval {
+				if c == '\\' && !is_literal_char {
+					is_literal_char = true;
+					continue;
+				}
+				if c == '"' && !is_literal_char {
+					is_in_stringval = false;
+					continue;
+				}
+				let mut char_add:char = c;
+				if is_literal_char {
+					char_add = match c {
+						'\\' => '\\',
+						'n'  => '\n',
+						't'  => '\t',
+						other => other
+					};
+					is_literal_char = false;
+				}
+				for b in char_to_boolvec(char_add) {
+					new_line.push(match b {
+						true => '1',
+						false => '0'
+					})
+				}
+			} else {
+				new_line.push(c);
+			}
+		}
+		return new_line;
+	}
+
 	pub fn add_external_call<F>(&mut self, name: &str, external: F)
 		where F : 'static + Fn(&Value, &mut Environment, &Assembler) {
 
@@ -38,53 +81,7 @@ impl Assembler {
 		self.code.push(create_instruction(iname.as_ref(), arguments));
 	}
 
-	pub fn parse_line(&mut self, linearg: &String) {
-		let mut line:String = linearg.trim().to_string();
-		remove_comments(&mut line, COMMENT_CHAR);
-
-		{
-			let mut is_literal_char = false;
-			let mut is_in_stringval = false;
-			let mut new_line:String = String::new();
-			for c in line.chars() {
-				if !is_in_stringval && c == '"' {
-					is_in_stringval = true;
-					is_literal_char = false;
-					new_line.push('b');
-					continue;
-				}
-				if is_in_stringval {
-					if c == '\\' && !is_literal_char {
-						is_literal_char = true;
-						continue;
-					}
-					if c == '"' && !is_literal_char {
-						is_in_stringval = false;
-						continue;
-					}
-					let mut char_add:char = c;
-					if is_literal_char {
-						char_add = match c {
-							'\\' => '\\',
-							'n'  => '\n',
-							't'  => '\t',
-							other => other
-						};
-						is_literal_char = false;
-					}
-					for b in char_to_boolvec(char_add) {
-						new_line.push(match b {
-							true => '1',
-							false => '0'
-						})
-					}
-				} else {
-					new_line.push(c);
-				}
-			}
-			line = new_line;
-		}
-
+	fn parse_macros(&mut self, line: &String) -> bool {
 		//macro
 		if line.chars().next() == Some('!') {
 			let macro_text = line[1..].trim();
@@ -99,26 +96,57 @@ impl Assembler {
 					}
 					let name = macro_args[1].to_string();
 					let args = macro_args[2..].join(" ");
-					println!("Defined '{}' as '{}'", name, args);
+					//println!("Defined '{}' as '{}'", name, args);
 					self.defines.push((name, args));
 				},
 				name => panic!("Unknown macro name {}!", name)
 			}
-			return;
+			return true;
 		}
+		return false;
+	}
 
-		//label
+	fn parse_defines(&self, line:&String) -> String {
+		let ret = line.split(",").map(|w|{
+			return format!(" {} ,", w);
+		}).collect::<String>();
+		let len = ret.len();
+		ret[0..(len-1)].split_whitespace().map(|w|{
+			for def in &self.defines {
+				if def.0 == w {
+					return format!("{} ", def.1);
+				}
+			}
+			return format!("{} ", w);
+		}).collect::<String>()
+	}
+
+	fn parse_labels(&mut self, line:&String) -> bool {
 		if line.chars().next() == Some('.') {
 			let name = line[1..].to_string();
-			//println!("Added label: {}", name);
 			self.labels.insert(name, self.code.len());
+			return true;
+		}
+		return false;
+	}
+
+	pub fn parse_line(&mut self, linearg: &String) {
+		//trim and remove comments
+		let mut line:String = linearg.trim().to_string();
+		remove_comments(&mut line, COMMENT_CHAR);
+
+		//parse strings into 'b10101010' format
+		line = self.parse_strings(&line);
+
+		//use macros and labels
+		if self.parse_macros(&line) {
+			return;
+		}
+		if self.parse_labels(&line) {
 			return;
 		}
 
-		//replace defines
-		//for def in &self.defines {
-			//line = line.replace::<&str>(def.0.as_ref(), &def.1.as_ref());
-		//}
+		line = self.parse_defines(&line);
 
 		//parse name and arguments
 		let mut arg_string:String = String::new();

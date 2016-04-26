@@ -12,7 +12,7 @@ pub trait Instruction {
 }
 
 pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
-	// println!("{}: {}", name, arguments.join(", "));
+	//println!("{}: {}", name, arguments.join(", "));
 	match name {
 		"push" => mem::Push::new(name, arguments),
 		"pop"  => mem::Pop::new(name, arguments),

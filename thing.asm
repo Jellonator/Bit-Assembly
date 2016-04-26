@@ -2,30 +2,35 @@ push 256;first few bits are register
 mov [0:256], 0
 jmp start;
 
+!define rax [  0:64]
+!define rbx [ 64:64]
+!define rcx [128:64]
+!define rdx [192:64]
+
 .start
-mov [  0:64], 10
-mov [ 64:64], 10
-mov [128:64],  0
-mov [-1:1], 0
+	mov rax, 10
+	mov rbx, 10
+	mov rcx,  0
+	mov rdx,  0
 
 .first
-ext print, "Enter first number: "
-ext inputnum, [0:64]
-ext valid, [-1:1]
-je [-1:1], 0, first
+	ext print, "Enter first number: "
+	ext inputnum, rax
+	ext valid, rdx
+	je rdx, 0, first
 
 .second
-ext print, "Enter second number: "
-ext inputnum, [64:64]
-ext valid, [-1:1]
-je [-1:1], 0, second
+	ext print, "Enter second number: "
+	ext inputnum, rbx
+	ext valid, rdx
+	je rdx, 0, second
 
-ext print, "Multiplying "
-ext printnum, [0:64]
-ext print, " by "
-ext printnum, [64:64]
+	ext print, "Multiplying "
+	ext printnum, rax
+	ext print, "\nby          "
+	ext printnum, rbx
 
-mul [128:64], [0:64], [64:64]
+	mul rcx, rax, rbx
 
-ext print, "\nResult: "
-ext printnum, [128:64]
+	ext print, "\nResult:     "
+	ext printnum, rcx
