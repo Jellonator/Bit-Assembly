@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 extern crate gmp;
 
 pub fn remove_comments(value: &mut String, comment: char) {
@@ -35,15 +36,23 @@ pub fn boolvec_to_usize(vec:&[bool]) -> usize {
 }
 
 pub fn boolvec_to_u8(vec:&[bool]) -> u8 {
+	//backwards from other vec -> num implementations,
+	//printed characters have different endianess
 	let mut ret:u8 = 0;
 
 	for i in 0..vec.len() {
 		if vec[i]{
-			ret |= 1 << i;
+			ret |= 128 >> i;
 		}
 	}
 
 	return ret;
+}
+
+pub fn char_to_boolvec(c:char) -> Vec<bool> {
+	let mut temp_string:String = String::new();
+	temp_string.push(c);
+	return str_to_boolvec(temp_string.as_ref());
 }
 
 pub fn bignum_to_usize(num: &gmp::mpz::Mpz) -> usize {
@@ -64,5 +73,17 @@ pub fn bignum_to_boolvec(num: &gmp::mpz::Mpz) -> Vec<bool> {
 	for i in 0..num_bits {
 		ret[i] = num.tstbit(i);
 	}
+	ret
+}
+
+pub fn str_to_boolvec(s:&str) -> Vec<bool> {
+	let mut ret:Vec<bool> = vec![];
+
+	for b in s.as_bytes() {
+		for i in 0..8 {
+			ret.push((*b as u32) & (128 >> i) != 0);
+		}
+	}
+
 	ret
 }

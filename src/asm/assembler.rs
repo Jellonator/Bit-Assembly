@@ -1,22 +1,25 @@
+extern crate gmp;
+use super::value::Value;
+
 const COMMENT_CHAR:char = ';';
 const ARGUMENT_CHAR:char = ',';
 
 use super::environment::Environment;
 use super::instruction::Instruction;
 use super::instruction::create_instruction;
-use super::util::remove_comments;
+use super::util::*;
 use std::collections::HashMap;
 
 pub struct Assembler {
 	code:       Vec<Box<Instruction>>,
 	pub labels: HashMap<String, usize>,
 	defines:    Vec<(String, String)>,
-	pub ext_calls:  HashMap<String, Box<Fn(&[bool])>>
+	pub ext_calls:  HashMap<String, Box<Fn(&Value, &mut Environment, &Assembler)>>
 }
 
 impl Assembler {
 	pub fn add_external_call<F>(&mut self, name: &str, external: F)
-		where F : 'static + Fn(&[bool]) {
+		where F : 'static + Fn(&Value, &mut Environment, &Assembler) {
 
 		self.ext_calls.insert(name.to_string(), Box::new(external));
 	}
@@ -38,6 +41,49 @@ impl Assembler {
 	pub fn parse_line(&mut self, linearg: &String) {
 		let mut line:String = linearg.trim().to_string();
 		remove_comments(&mut line, COMMENT_CHAR);
+
+		{
+			let mut is_literal_char = false;
+			let mut is_in_stringval = false;
+			let mut new_line:String = String::new();
+			for c in line.chars() {
+				if !is_in_stringval && c == '"' {
+					is_in_stringval = true;
+					is_literal_char = false;
+					new_line.push('b');
+					continue;
+				}
+				if is_in_stringval {
+					if c == '\\' && !is_literal_char {
+						is_literal_char = true;
+						continue;
+					}
+					if c == '"' && !is_literal_char {
+						is_in_stringval = false;
+						continue;
+					}
+					let mut char_add:char = c;
+					if is_literal_char {
+						char_add = match c {
+							'\\' => '\\',
+							'n'  => '\n',
+							't'  => '\t',
+							other => other
+						};
+						is_literal_char = false;
+					}
+					for b in char_to_boolvec(char_add) {
+						new_line.push(match b {
+							true => '1',
+							false => '0'
+						})
+					}
+				} else {
+					new_line.push(c);
+				}
+			}
+			line = new_line;
+		}
 
 		//macro
 		if line.chars().next() == Some('!') {
@@ -64,15 +110,15 @@ impl Assembler {
 		//label
 		if line.chars().next() == Some('.') {
 			let name = line[1..].to_string();
-			println!("Added label: {}", name);
+			//println!("Added label: {}", name);
 			self.labels.insert(name, self.code.len());
 			return;
 		}
 
 		//replace defines
-		for def in &self.defines {
+		//for def in &self.defines {
 			//line = line.replace::<&str>(def.0.as_ref(), &def.1.as_ref());
-		}
+		//}
 
 		//parse name and arguments
 		let mut arg_string:String = String::new();

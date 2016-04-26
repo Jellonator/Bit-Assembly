@@ -8,33 +8,33 @@ pub struct Pop(usize);
 pub struct Mov{ to: Value, from: Value }
 
 impl Instruction for Push {
-	fn new(name: &str, arguments: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, arguments: &[&str]) -> Box<Instruction> {
 		assert!(arguments.len() == 1, "Instruction 'push' requires 1 argument.");
 		Box::new(
 			Push(arguments[0].parse().expect("Argument 0 is not valid."))
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		env.push(self.0, false);
 	}
 }
 
 impl Instruction for Pop {
-	fn new(name: &str, arguments: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, arguments: &[&str]) -> Box<Instruction> {
 		assert!(arguments.len() == 1, "Instruction 'push' requires 1 argument.");
 		Box::new(
 			Pop(arguments[0].parse().expect("Argument 0 is not valid."))
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		env.pop(self.0);
 	}
 }
 
 impl Instruction for Mov {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 2, "Instruction 'mov' requires 2 arguments.");
 		Box::new(
 			Mov {
@@ -44,7 +44,7 @@ impl Instruction for Mov {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.from.can_coerce(self.to.get_size()) {
 			panic!("Argument is bigger than assignment!");
 		}

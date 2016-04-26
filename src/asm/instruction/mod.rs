@@ -1,7 +1,5 @@
-use super::value::Value;
 use super::environment::Environment;
 use super::assembler::Assembler;
-use std::ops::Neg;
 mod math;
 mod jump;
 mod mem;
@@ -14,7 +12,7 @@ pub trait Instruction {
 }
 
 pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
-	println!("{}: {}", name, arguments.join(", "));
+	// println!("{}: {}", name, arguments.join(", "));
 	match name {
 		"push" => mem::Push::new(name, arguments),
 		"pop"  => mem::Pop::new(name, arguments),
@@ -33,6 +31,9 @@ pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
 
 		"add"  => math::Add::new(name, arguments),
 		"sub"  => math::Sub::new(name, arguments),
+		"mul"  => math::Mul::new(name, arguments),
+		"div"  => math::Div::new(name, arguments),
+		"mod"  => math::Mod::new(name, arguments),
 
 		"jmp"  => jump::Jump::new(name, arguments),
 		"je"   => jump::JumpEqual::new(name, arguments),

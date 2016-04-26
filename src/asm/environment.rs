@@ -1,17 +1,18 @@
 extern crate gmp;
 use super::util::*;
-use std::cmp;
 use super::assembler::Assembler;
 
 pub struct Environment {
 	stack: Vec<bool>,
 	callstack: Vec<usize>,
-	pub instruction: usize
+	pub instruction: usize,
+	pub validity: bool
 }
 
+#[allow(dead_code)]
 impl Environment {
 	pub fn new() -> Environment {
-		Environment {stack: Vec::new(), callstack: Vec::new(), instruction: 0}
+		Environment {stack: Vec::new(), callstack: Vec::new(), instruction: 0, validity: true}
 	}
 
 	pub fn stack_len(&self) -> usize {

@@ -11,7 +11,7 @@ pub struct LShift { to: Value, op1: Value, op2:Value }
 pub struct RShift { to: Value, op1: Value, op2:Value }
 
 impl Instruction for And {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'and' requires 3 arguments.");
 		Box::new(
 			And {
@@ -22,7 +22,7 @@ impl Instruction for And {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op1.can_coerce(self.to.get_size())
 		|| !self.op2.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");
@@ -34,7 +34,7 @@ impl Instruction for And {
 }
 
 impl Instruction for Or {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
 		Box::new(
 			Or {
@@ -45,7 +45,7 @@ impl Instruction for Or {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op1.can_coerce(self.to.get_size())
 		|| !self.op2.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");
@@ -57,7 +57,7 @@ impl Instruction for Or {
 }
 
 impl Instruction for Xor {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
 		Box::new(
 			Xor {
@@ -68,7 +68,7 @@ impl Instruction for Xor {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op1.can_coerce(self.to.get_size())
 		|| !self.op2.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");
@@ -80,7 +80,7 @@ impl Instruction for Xor {
 }
 
 impl Instruction for Not {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
 		Box::new(
 			Not {
@@ -90,7 +90,7 @@ impl Instruction for Not {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");
 		}
@@ -104,7 +104,7 @@ impl Instruction for Not {
 }
 
 impl Instruction for LShift {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
 		Box::new(
 			LShift {
@@ -115,7 +115,7 @@ impl Instruction for LShift {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op1.can_coerce(self.to.get_size())
 		|| !self.op2.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");
@@ -127,7 +127,7 @@ impl Instruction for LShift {
 }
 
 impl Instruction for RShift {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
 		Box::new(
 			RShift {
@@ -138,7 +138,7 @@ impl Instruction for RShift {
 		)
 	}
 
-	fn exec(&self, env: &mut Environment, asm: &Assembler) {
+	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		if !self.op1.can_coerce(self.to.get_size())
 		|| !self.op2.can_coerce(self.to.get_size()) {
 			panic!("Arguments are not all same size!");

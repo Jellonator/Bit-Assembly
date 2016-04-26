@@ -12,7 +12,7 @@ pub struct JumpLess { label:String, op1:Value, op2:Value }
 pub struct JumpLessEqual { label:String, op1:Value, op2:Value }
 
 impl Instruction for Jump {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 1, "Instruction 'jmp' requires 1 argument.");
 		Box::new(
 			Jump { label: args[0].to_string() }
@@ -26,7 +26,7 @@ impl Instruction for Jump {
 }
 
 impl Instruction for JumpEqual {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'je' requires 3 arguments.");
 		Box::new(
 			JumpEqual {
@@ -45,7 +45,7 @@ impl Instruction for JumpEqual {
 }
 
 impl Instruction for JumpNotEqual {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'jne' requires 3 arguments.");
 		Box::new(
 			JumpNotEqual {
@@ -64,7 +64,7 @@ impl Instruction for JumpNotEqual {
 }
 
 impl Instruction for JumpGreater {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'jg' requires 3 arguments.");
 		Box::new(
 			JumpGreater {
@@ -83,7 +83,7 @@ impl Instruction for JumpGreater {
 }
 
 impl Instruction for JumpGreaterEqual {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'jge' requires 3 arguments.");
 		Box::new(
 			JumpGreaterEqual {
@@ -102,7 +102,7 @@ impl Instruction for JumpGreaterEqual {
 }
 
 impl Instruction for JumpLess {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'jl' requires 3 arguments.");
 		Box::new(
 			JumpLess {
@@ -121,7 +121,7 @@ impl Instruction for JumpLess {
 }
 
 impl Instruction for JumpLessEqual {
-	fn new(name: &str, args: &[&str]) -> Box<Instruction> {
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'jle' requires 3 arguments.");
 		Box::new(
 			JumpLessEqual {

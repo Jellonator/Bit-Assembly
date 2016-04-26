@@ -25,6 +25,7 @@ impl fmt::Display for Value {
 	}
 }
 
+#[allow(dead_code)]
 impl Value {
 	pub fn is_ptr(&self) -> bool {
 		match *self {
@@ -140,6 +141,17 @@ impl Value {
 				},
 				_ => None
 			}
+		} else if value.chars().next() == Some('b') {
+			let mut boolvec:Vec<bool> = vec![];
+			boolvec.reserve(value.len() - 1);
+			for c in value[1..].chars() {
+				boolvec.push(match c{
+					'0' => false,
+					'1' => true,
+					other => panic!("'{}' is not a valid character in a boolvec!", other)
+				});
+			}
+			return Some(Value::Boolvec(boolvec));
 		} else {
 			//Is not a pointer
 			return match gmp::mpz::Mpz::from_str(value){
