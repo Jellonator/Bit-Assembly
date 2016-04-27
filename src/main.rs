@@ -32,7 +32,7 @@ fn main() {
 			io::stdout().flush().ok().expect("Could not flush stdout");
 		}
 	});
-	
+
 	asm.add_external_call("valid", |v,e,_a|{
 		let pos = v.get_ptr_position(e);
 		let num = match e.validity {
