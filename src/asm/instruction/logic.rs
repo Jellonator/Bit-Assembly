@@ -84,7 +84,7 @@ impl Instruction for Xor {
 
 impl Instruction for Not {
 	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+		assert!(args.len() == 2, "Instruction 'not' requires 2 arguments.");
 		Box::new(
 			Not {
 				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
