@@ -9,6 +9,9 @@ use super::instruction::Instruction;
 use super::instruction::create_instruction;
 use super::util::*;
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
 
 pub struct Assembler {
 	code:       Vec<Box<Instruction>>,
@@ -86,6 +89,7 @@ impl Assembler {
 		if line.chars().next() == Some('!') {
 			let macro_text = line[1..].trim();
 			let macro_args:Vec<&str> = macro_text.split_whitespace().collect();
+			let macro_total_args:&str = &macro_text[macro_args[0].len()..].trim();
 			if macro_args.len() < 1 {
 				panic!("Empty macro!");
 			}
@@ -98,6 +102,14 @@ impl Assembler {
 					let args = macro_args[2..].join(" ");
 					//println!("Defined '{}' as '{}'", name, args);
 					self.defines.push((name, args));
+				},
+				"include" => {
+					let file = File::open(macro_total_args).unwrap();
+					let buffer = BufReader::new(&file);
+					for line in buffer.lines() {
+						let l:String = line.unwrap();
+						self.parse_line(&l);
+					}
 				},
 				name => panic!("Unknown macro name {}!", name)
 			}
