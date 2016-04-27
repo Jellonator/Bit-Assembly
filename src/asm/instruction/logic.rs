@@ -23,13 +23,14 @@ impl Instruction for And {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) & self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -46,13 +47,14 @@ impl Instruction for Or {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) | self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -69,13 +71,14 @@ impl Instruction for Xor {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) ^ self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -91,7 +94,7 @@ impl Instruction for Not {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op.can_coerce(self.to.get_size()) {
+		if !self.op.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
@@ -99,7 +102,8 @@ impl Instruction for Not {
 		for i in 0..val.len() {
 			val[i] = !val[i];
 		}
-		env.set_bits_boolvec(val.as_slice(), pos, self.to.get_size())
+		let size = self.to.get_size(env);
+		env.set_bits_boolvec(val.as_slice(), pos, size)
 	}
 }
 
@@ -116,13 +120,14 @@ impl Instruction for LShift {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) << self.op2.get_usize(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -139,12 +144,13 @@ impl Instruction for RShift {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Arguments are not all same size!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) >> self.op2.get_usize(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }

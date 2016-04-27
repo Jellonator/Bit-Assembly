@@ -3,33 +3,35 @@ use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
 
-pub struct Push(usize);
-pub struct Pop(usize);
+pub struct Push(Value);
+pub struct Pop(Value);
 pub struct Mov{ to: Value, from: Value }
 
 impl Instruction for Push {
-	fn new(_: &str, arguments: &[&str]) -> Box<Instruction> {
-		assert!(arguments.len() == 1, "Instruction 'push' requires 1 argument.");
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
+		assert!(args.len() == 1, "Instruction 'push' requires 1 argument.");
 		Box::new(
-			Push(arguments[0].parse().expect("Argument 0 is not valid."))
+			Push(Value::new(args[0]).expect("Argument 0 is not valid."))
 		)
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		env.push(self.0, false);
+		let size = self.0.get_usize(env);
+		env.push(size, false);
 	}
 }
 
 impl Instruction for Pop {
-	fn new(_: &str, arguments: &[&str]) -> Box<Instruction> {
-		assert!(arguments.len() == 1, "Instruction 'push' requires 1 argument.");
+	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
+		assert!(args.len() == 1, "Instruction 'push' requires 1 argument.");
 		Box::new(
-			Pop(arguments[0].parse().expect("Argument 0 is not valid."))
+			Pop(Value::new(args[0]).expect("Argument 0 is not valid."))
 		)
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		env.pop(self.0);
+		let size = self.0.get_usize(env);
+		env.pop(size);
 	}
 }
 
@@ -45,11 +47,12 @@ impl Instruction for Mov {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.from.can_coerce(self.to.get_size()) {
+		if !self.from.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.from.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }

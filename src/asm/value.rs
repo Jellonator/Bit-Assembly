@@ -9,7 +9,7 @@ use super::util::*;
 pub enum Value {
 	Boolvec (Vec<bool>),
 	Bignum (gmp::mpz::Mpz),
-	Pointer {pos:Box<Value>, len:usize, rev:bool}
+	Pointer {pos:Box<Value>, len:Box<Value>, rev:bool}
 }
 
 impl fmt::Display for Value {
@@ -53,7 +53,7 @@ impl Value {
 			Value::Bignum(ref num) => num.clone(),
 			Value::Boolvec(ref vec) => boolvec_to_bignum(vec),
 			Value::Pointer{..} => {
-				let size = self.get_ptr_size();
+				let size = self.get_ptr_size(env);
 				let pos = self.get_ptr_position(env);
 				let bits = env.slice(pos, pos + size);
 				boolvec_to_bignum(bits)
@@ -66,7 +66,7 @@ impl Value {
 			Value::Bignum(ref num) => bignum_to_boolvec(num),
 			Value::Boolvec(ref vec) => vec.clone(),
 			Value::Pointer{..} => {
-				let size = self.get_ptr_size();
+				let size = self.get_ptr_size(env);
 				let pos = self.get_ptr_position(env);
 				let bits = env.slice(pos, pos + size);
 				bits.to_vec()
@@ -74,24 +74,24 @@ impl Value {
 		}
 	}
 
-	pub fn get_ptr_size(&self) -> usize {
+	pub fn get_ptr_size(&self, env: &Environment) -> usize {
 		match *self {
-			Value::Pointer{ref len, ..} => *len,
+			Value::Pointer{ref len, ..} => len.get_usize(env),
 			_ => panic!("This value is not a pointer!")
 		}
 	}
 
-	pub fn can_coerce(&self, new_size:usize) -> bool {
+	pub fn can_coerce(&self, new_size:usize, env: &Environment) -> bool {
 		match *self {
-			Value::Pointer{ref len, ..} => *len <= new_size,
+			Value::Pointer{ref len, ..} => len.get_usize(env) <= new_size,
 			Value::Boolvec(ref vec) => vec.len() <= new_size,
 			Value::Bignum(ref num) => num.bit_length() <= new_size
 		}
 	}
 
-	pub fn get_size(&self) -> usize {
+	pub fn get_size(&self, env: &Environment) -> usize {
 		match *self {
-			Value::Pointer{ref len, ..} => *len,
+			Value::Pointer{ref len, ..} => len.get_usize(env),
 			Value::Boolvec(ref vec) => vec.len(),
 			Value::Bignum(ref num) => num.bit_length()
 		}
@@ -130,12 +130,12 @@ impl Value {
 			}
 			if args.1 == "" {args.1 = "1".to_string();}
 			let position = Value::new(&args.0);
-			let length = args.1.parse::<usize>();
+			let length = Value::new(&args.1);
 			return match (position, length) {
-				(Some(pos_val), Ok(len_val)) => {
+				(Some(pos_val), Some(len_val)) => {
 					Some(Value::Pointer {
 						pos: Box::new(pos_val),
-						len: len_val,
+						len: Box::new(len_val),
 						rev: from_back
 					})
 				},

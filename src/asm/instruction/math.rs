@@ -22,13 +22,14 @@ impl Instruction for Add {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) + self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -45,13 +46,14 @@ impl Instruction for Sub {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) - self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -68,13 +70,14 @@ impl Instruction for Mul {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) * self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -91,13 +94,14 @@ impl Instruction for Div {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) / self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
 
@@ -114,12 +118,13 @@ impl Instruction for Mod {
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
-		if !self.op1.can_coerce(self.to.get_size())
-		|| !self.op2.can_coerce(self.to.get_size()) {
+		if !self.op1.can_coerce(self.to.get_size(env), env)
+		|| !self.op2.can_coerce(self.to.get_size(env), env) {
 			panic!("Argument is bigger than assignment!");
 		}
 		let pos = self.to.get_ptr_position(&env);
 		let val = self.op1.get_bignum(&env) % self.op2.get_bignum(&env);
-		env.set_bits_bignum(&val, pos, self.to.get_size());
+		let size = self.to.get_size(env);
+		env.set_bits_bignum(&val, pos, size);
 	}
 }
