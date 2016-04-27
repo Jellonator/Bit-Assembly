@@ -47,11 +47,15 @@ Using `ext print, value` can be used to print out a string to the standard outpu
 Likewise, `ext printnum, value` is used to print out numeric values to the standard output.
 
 ### input ###
-`ext input, pointer` will take in a string input, and assign it to 'pointer'.
+All input must first be attained via `ext prompt`, which will prompt the user for an input, and store it.
 
-`ext inputnum, pointer` will take in a string input, convert it into a number, and assign it to 'pointer'.
+`ext input, pointer` will take in the string input from the prompt, and store it into the pointer.
 
-`ext valid, pointer` can be used to check if the input was valid or not. 'pointer' only needs to be one bit.
+`ext inputnum, pointer` will take the input, convert it into a number, and store it into 'pointer'.
+
+`ext valid, pointer` can be used to check if the input was valid or not. 'pointer' only needs to be one bit, but it can be any length anyways.
+
+`ext inputlen, pointer` is used to get the length of the input, and store it into the pointer.
 
 ## Instructions ##
 Instructions tell the compiler what to do. They are very similar to instructions in other assembly languages, but since Bit assembly does not use registers, it is a little more verbose. All instructions take the form `instruction {arg1}, {arg2}...`, where arguments are separated by commas.

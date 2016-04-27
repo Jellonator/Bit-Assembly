@@ -119,11 +119,17 @@ impl Assembler {
 	}
 
 	fn parse_defines(&self, line:&String) -> String {
-		let ret = line.split(",").map(|w|{
-			return format!(" {} ,", w);
-		}).collect::<String>();
-		let len = ret.len();
-		ret[0..(len-1)].split_whitespace().map(|w|{
+		let mut ret = String::new();
+		for c in line.chars() {
+			match c {
+				',' => ret.push_str(" , "),
+				'[' => ret.push_str(" [ "),
+				']' => ret.push_str(" ] "),
+				':' => ret.push_str(" : "),
+				other => ret.push(other)
+			}
+		}
+		ret.split_whitespace().map(|w|{
 			for def in &self.defines {
 				if def.0 == w {
 					return format!("{} ", def.1);
