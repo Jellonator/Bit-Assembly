@@ -1,18 +1,26 @@
 extern crate gmp;
 use super::util::*;
 use super::assembler::Assembler;
+use std::mem::size_of;
 
 pub struct Environment {
 	stack: Vec<bool>,
 	callstack: Vec<usize>,
 	pub instruction: usize,
-	pub validity: bool
+	pub validity: bool,
+	pub input_string: String
 }
 
 #[allow(dead_code)]
 impl Environment {
 	pub fn new() -> Environment {
-		Environment {stack: Vec::new(), callstack: Vec::new(), instruction: 0, validity: true}
+		Environment {
+			stack: Vec::new(),
+			callstack: Vec::new(),
+			instruction: 0,
+			validity: true,
+			input_string: "".to_string()
+		}
 	}
 
 	pub fn stack_len(&self) -> usize {
@@ -46,6 +54,15 @@ impl Environment {
 		for i in 0..len {
 			self.stack[pos + i] = match i < num.len() {
 				true => num[i],
+				false => false,
+			}
+		}
+	}
+
+	pub fn set_bits_usize(&mut self, num: usize, pos:usize, len:usize) {
+		for i in 0..len {
+			self.stack[pos + i] = match i < size_of::<usize>() {
+				true => num & (1 << i) != 0,
 				false => false,
 			}
 		}

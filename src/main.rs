@@ -1,3 +1,4 @@
+extern crate gmp;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -8,7 +9,6 @@ use std::str::FromStr;
 use asm::assembler::Assembler;
 use asm::environment::Environment;
 use std::env;
-extern crate gmp;
 use std::collections::HashMap;
 
 mod asm;
@@ -37,7 +37,7 @@ fn add_external_calls(asm:&mut Assembler) {
 		}
 	});
 
-	asm.add_external_call("valid", |v,e,_a|{
+	asm.add_external_call("valid", |v,e,_a| {
 		let pos = v.get_ptr_position(e);
 		let num = match e.validity {
 			true => gmp::mpz::Mpz::one(),
@@ -46,19 +46,39 @@ fn add_external_calls(asm:&mut Assembler) {
 		let size = v.get_size(e);
 		e.set_bits_bignum(&num, pos, size);
 	});
-	asm.add_external_call("input", |v,e,_|{
+	asm.add_external_call("prompt", |v,e,_|{
 		let mut input = String::new();
 		io::stdin().read_line(&mut input).expect("Invalid Input!");
-		let boolvec = str_to_boolvec(input.as_ref());
+		e.input_string = "".to_string();
+		let mut first_line = true;
+		for line in input.lines() {
+			if first_line {
+				first_line = false;
+			} else {
+				e.input_string.push('\n');
+			}
+			e.input_string.push_str(line.as_ref());
+		}
+		//let boolvec = str_to_boolvec(input.as_ref());
+		//let pos = v.get_ptr_position(e);
+		//let size = v.get_size(e);
+		//e.set_bits_boolvec(boolvec.as_slice(), pos, size);
+	});
+	asm.add_external_call("inputlen", |v,e,_|{
+		let len_bits = e.input_string.len() * 8;
+		let pos = v.get_ptr_position(e);
+		let size = v.get_size(e);
+		e.set_bits_usize(len_bits, pos, size);
+	});
+	asm.add_external_call("input", |v,e,_|{
+		let boolvec = str_to_boolvec(e.input_string.as_ref());
 		let pos = v.get_ptr_position(e);
 		let size = v.get_size(e);
 		e.set_bits_boolvec(boolvec.as_slice(), pos, size);
 	});
 	asm.add_external_call("inputnum", |v,e,_|{
-		let mut input = String::new();
-		io::stdin().read_line(&mut input).expect("Invalid Input!");
 		e.validity = true;
-		let num = match gmp::mpz::Mpz::from_str(input.as_ref()) {
+		let num = match gmp::mpz::Mpz::from_str(e.input_string.as_ref()) {
 			Ok(val) => val,
 			Err(_) => {
 				e.validity = false;

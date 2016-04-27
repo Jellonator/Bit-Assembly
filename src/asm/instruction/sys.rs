@@ -1,3 +1,5 @@
+extern crate gmp;
+
 use super::super::value::Value;
 use super::super::environment::Environment;
 use super::super::assembler::Assembler;
@@ -35,11 +37,15 @@ impl Instruction for Call {
 
 impl Instruction for Ext {
 	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 2, "Instruction 'ext' takes 2 arguments.");
+		assert!(args.len() <= 2, "Instruction 'ext' takes at most 2 arguments.");
+		let value = match args.len() == 2 {
+			true => Value::new(args[1]).expect("Argument '1' is invalid."),
+			false => Value::Bignum(gmp::mpz::Mpz::one())
+		};
 		Box::new(
 			Ext{
 				name: args[0].to_string(),
-				val: Value::new(args[1]).expect("Argument 1 is invalid.")
+				val: value
 			}
 		)
 	}
