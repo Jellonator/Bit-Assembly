@@ -10,15 +10,12 @@ Data in bit asm is stored(of course) as a sequence of bits.
 Quick 'Hello, World!' example:
 ```asm
 push 256
-mov [0:1024], "Hello, World!"
+mov [0:256], "Hello, World!"
 ext print, "hello, World!"
 ```
 
 ### Literals ###
-literals are denoted without any special symbols, e.g. `1234`, `0b1100` or `"foobar"`
-`1234` is a base-10 numeric literal,
-`0b1100` is a base-2 binary literal,
-`"foobar"` is a string value, which is converted into binary.
+literals are denoted without any special symbols, e.g. `1234`, a base-10 numeric literal, `0b1100`, a base-2 binary literal, or `"foobar"`, a string literal which is converted into a binary literal.
 
 ### Pointers ###
 A pointer is denoted with square brackets, e.g. `[2]` refers to bit 2 and `[8:16]` refers to bits 8 through 23(size of 16 bits).
@@ -32,7 +29,7 @@ mov [0], 0 ;this is also a comment
 
 ## Memory ##
 ### The Stack ###
-By default, no bits are allocated on the stack. In order to get memory for use, they must be allocated to the stack. More memory can be allocated with the `push` and `pop` instructions.
+By default, no bits are allocated on the stack. In order to get memory for use, they must be allocated to the stack. Memory can be allocated or deallocated with the `push` and `pop` instructions, respectively.
 
 Push takes the format `push [size]`, where 'size' is how many bits need to be pushed onto the stack.
 
@@ -44,26 +41,26 @@ The following examples assume that the necessary bits have already been allocate
 The `ext` instruction, also known as 'external call', is used to interact with outside interfaces. Currently, it contains only string input and output functions, but it is easily extensible.
 
 ### print ###
-Using `ext print, value` can be used to print out a string to the standard output. This function will cause a crash if the provided string is not valid utf-8. Strings may be null terminated.
+Using `ext print, [value]` can be used to print out a string to the standard output. This function will cause a crash if the provided string is not valid utf-8. Strings may be null terminated.
 
-Likewise, `ext printnum, value` is used to print out numeric values to the standard output.
+Likewise, `ext printnum, [value]` is used to print out numeric values to the standard output.
 
 ### input ###
 All input must first be attained via `ext prompt`, which will prompt the user for an input, and store it.
 
-`ext input, pointer` will take in the string input from the prompt, and store it into the pointer.
+`ext input, [pointer]` will take in the string input from the prompt, and store it into the pointer.
 
-`ext inputnum, pointer` will take the input, convert it into a number, and store it into 'pointer'.
+`ext inputnum, [pointer]` will take the input, convert it into a number, and store it into 'pointer'.
 
-`ext valid, pointer` can be used to check if the input was valid or not. 'pointer' only needs to be one bit, but it can be any length anyways.
+`ext valid, [pointer]` can be used to check if the input was valid or not. 'pointer' only needs to be one bit, but it can be any length anyways.
 
-`ext inputlen, pointer` is used to get the length of the input, and store it into the pointer.
+`ext inputlen, [pointer]` is used to get the length of the input, and store it into the pointer.
 
 ## Instructions ##
-Instructions tell the compiler what to do. They are very similar to instructions in other assembly languages, but since Bit assembly does not use registers, it is a little more verbose. All instructions take the form `instruction {arg1}, {arg2}...`, where arguments are separated by commas.
+Instructions tell the compiler what to do. They are very similar to instructions in other assembly languages, but since Bit assembly does not use registers, it is a little more verbose. All instructions take the form `instruction [arg1], [arg2]...`, where arguments are separated by commas.
 
 ### MOV ###
-the `mov` instruction can copy values into memory with the format `mov destination, source` where destination is a pointer and source is a any value.
+the `mov` instruction can copy values into memory with the format `mov [destination], [source]` where destination is a pointer and source is a any value.
 Examples:
 ```asm
 mov [0], 1        ; set address 0 to 1
@@ -71,7 +68,7 @@ mov [8:8], 200    ; set addresses 8:8 to 200
 mov [16:8], [8:8] ; copy [8:8] to [16:8]
 ```
 
-You can not `mov` a larger value into a smaller balue;
+You can not `mov` a larger value into a smaller value;
 ```asm
 mov [0:3], 128   ;128 will not fit into 3 bits(minimum 8 bits)
 
@@ -83,7 +80,7 @@ mov [0:4], [0:2] ;This does work, since 2 bits can be coerced into four.
 ```
 
 ### NOT operator ###
-The NOT operator has the format `not destination, source`, where destination is a pointer and source is any value. NOT will take the value of 'source,' invert each bit, and assign 'destination' to the result.
+The NOT operator has the format `not [destination], [source]`, where destination is a pointer and source is any value. NOT will take the value of 'source,' invert each bit, and assign 'destination' to the result.
 Example:
 ```asm
 mov [0],  0  ;set memory location 0 to 0
@@ -95,11 +92,11 @@ not [8:8], [0:8] ; 00110111, or 55
 
 ### Binary operators ###
 Bits can be operated on using OR, XOR, AND, etc.
-All of these instructions take the format `and destination, op1, op2` where op1 and op2 are values of the same length, and destination is a pointer with either the same length as op1 and op2 or a length of 1.
+All of these instructions take the format `and [destination], [op1], [op2]` where op1 and op2 are values of the same length, and destination is a pointer with either the same length as op1 and op2 or a length of 1.
 
 ### ADD and SUB ###
 Bits can be operated on with the arithmetic operators such as ADD and SUB.
-ADD and SUB both take the format `add destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
+ADD and SUB both take the format `add [destination], [op1], [op2]` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 
 The ADD operator will take the values of op1 and op2, and add them together:
 ```asm
@@ -112,14 +109,14 @@ sub [0:8], 100, 33 ;assign memory location 0 to 100 + 30, which is 70
 ```
 
 ### MUL ###
-The MUL operator is used to multiply two values and store it into another. It takes the format `mul destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
+The MUL operator is used to multiply two values and store it into another. It takes the format `mul [destination], [op1], [op2]` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 Example:
 ```asm
 mul [0:8], 8, 12 ;assign memory location 0 to 8 * 12, which is 96.
 ```
 
 ### DIV ###
-The DIV operator divides one number by another and assigns the result to destination. It takes the format `div destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
+The DIV operator divides one number by another and assigns the result to destination. It takes the format `div [destination], [op1], [op2]` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 Example:
 ```asm
 div [0:8], 200, 5 ;assign memory location 0 to 200/5, which is 40.
@@ -129,7 +126,7 @@ div [0:8], 200, 5 ;assign memory location 0 to 200/5, which is 40.
 The control flow can be controlled using jumps and calls, much like other assembly languages.
 
 ### Jumps ###
-A basic jump can be done with the 'jmp' instruction. It takes the format 'jmp label', where label is a valid label name.
+A basic jump can be done with the `jmp` instruction. It takes the format `jmp [label]`, where label is a valid label name.
 
 Comparative jumps can be achieved with other instructions. Such instructions include 'je op1, op2, label' which jumps to 'label' if op1 is equal to op2.
 
@@ -142,7 +139,7 @@ Other Jumps include the following:
  * jne: jump not equal to
 
 ### Calls ###
-Bit Assembly also includes a call stack. The `call` instruction pushes is similar to the `jmp` instruction, but it also adds the next instruction to the call stack. When the `ret` instruction is used, it jumps to the instruction after the last call, and pops the end off of the call stack.
+Bit Assembly also includes a call stack. The `call [label]` instruction pushes is similar to the `jmp` instruction, but it also adds the next instruction to the call stack. When the `ret` instruction is used, it jumps to the instruction after the last call, and pops the end off of the call stack.
 
 The following example illustrates this:
 ```asm
@@ -162,7 +159,7 @@ jmp start
 Bit assembly also includes a few simple macros to make using it a little easier
 
 ### !define ###
-The `!define name value` macro will define a metavariable, which will replace all instances of its name with its value. Since Bit Assembly doesn't have registers, the define macro allows the programmer to define their own.
+The `!define [name] {value}` macro will define a metavariable, which will replace all instances of its name with its value. Since Bit Assembly doesn't have registers, the define macro allows the programmer to define their own.
 
 ```asm
 push 4
@@ -177,4 +174,4 @@ or  register4, register1, register2 ; or registers 2 and 1 together, store it in
 ```
 
 ### !include ###
-The `!include filename` macro will take load every line of another file into the assembler at its position. This is useful for splitting up code into multiple files.
+The `!include [filename]` macro will take load every line of another file into the assembler at its position. This is useful for splitting up code into multiple files.
