@@ -126,6 +126,7 @@ impl Assembler {
 				'[' => ret.push_str(" [ "),
 				']' => ret.push_str(" ] "),
 				':' => ret.push_str(" : "),
+				'-' => ret.push_str(" - "),
 				other => ret.push(other)
 			}
 		}
@@ -150,8 +151,9 @@ impl Assembler {
 
 	pub fn parse_line(&mut self, linearg: &String) {
 		//trim and remove comments
-		let mut line:String = linearg.trim().to_string();
+		let mut line:String = linearg.to_string();
 		remove_comments(&mut line, COMMENT_CHAR);
+		line = line.trim().to_string();
 
 		//parse strings into 'b10101010' format
 		line = self.parse_strings(&line);

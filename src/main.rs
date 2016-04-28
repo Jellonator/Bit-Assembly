@@ -133,9 +133,6 @@ struct ArgType {
 }
 
 fn main() {
-	//load_file("thing.asm");
-	//load_text("ext print, \"no\"");
-
 	let valid_args = vec![
 		ArgType{name:"help".to_string(), short:Some("h".to_string()), arg:Req::No},
 		ArgType{name:"file".to_string(), short:Some("h".to_string()), arg:Req::Yes},

@@ -87,3 +87,40 @@ pub fn str_to_boolvec(s:&str) -> Vec<bool> {
 
 	ret
 }
+
+pub fn usize_len(num:usize) -> usize {
+	let mut ret = 0;
+	let mut num = num;
+	while num != 0 {
+		ret += 1;
+		num /= 2;
+	}
+	ret
+}
+
+pub fn usize_to_boolvec(num: usize) -> Vec<bool> {
+	let mut ret = vec![];
+	let mut i = 0;
+	let mut num = num;
+	while num != 0 {
+		ret.push(num % 2 == 1);
+		num /= 2;
+		i += 1;
+	}
+	ret
+}
+
+pub fn usize_to_bignum(num: usize) -> gmp::mpz::Mpz {
+	let mut ret = gmp::mpz::Mpz::zero();
+	let mut i = 0;
+	let mut num = num;
+	while num != 0 {
+		match num % 2 == 1 {
+			true => ret.setbit(i),
+			false => ret.clrbit(i),
+		}
+		num /= 2;
+		i += 1;
+	}
+	ret
+}

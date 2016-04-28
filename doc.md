@@ -1,6 +1,8 @@
 # Bit Assembly Master Document #
 Bit assembly is an assembly-inspired language that uses bits rather than bytes.
 Not that it's not actually assembly.
+Note that this isn't a serious project and that it is mostly a joke about mixing a hard to use group of languages with a data type that is awkward to manage.
+Also note that programs written with Bit Assembly are going to be pretty slow, due to the nature of bignums and lazy programmer inefficiencies. 
 
 ## Basics ##
 Data in bit asm is stored(of course) as a sequence of bits.
