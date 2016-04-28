@@ -1,8 +1,12 @@
 # Bit Assembly Master Document #
 Bit assembly is an assembly-inspired language that uses bits rather than bytes.
 Not that it's not actually assembly.
+
 Note that this isn't a serious project and that it is mostly a joke about mixing a hard to use group of languages with a data type that is awkward to manage.
+
 Also note that programs written with Bit Assembly are going to be pretty slow, due to the nature of bignums and lazy programmer inefficiencies.
+
+In this guide, necessary arguments are shown in `[brackets]`, whereas unnecessary arguments are shown in `{curly brackets}`.
 
 ## Basics ##
 Data in bit asm is stored(of course) as a sequence of bits.
@@ -105,7 +109,7 @@ add [0:8], 40, 40 ;assign memory location 0 to 40 + 40, which is 80
 
 The SUB operator will take the value of op1, subtract op2, and assign it to destination:
 ```asm
-sub [0:8], 100, 33 ;assign memory location 0 to 100 + 30, which is 70
+sub [0:8], 100, 33 ;assign memory location 0 to 100 - 33, which is 67
 ```
 
 ### MUL ###
@@ -174,4 +178,4 @@ or  register4, register1, register2 ; or registers 2 and 1 together, store it in
 ```
 
 ### !include ###
-The `!include [filename]` macro will take load every line of another file into the assembler at its position. This is useful for splitting up code into multiple files.
+The `!include [filename]` macro will take every line of another file and load it into the assembler at the position of the macro. This is useful for splitting up code into multiple files.
