@@ -2,13 +2,13 @@
 Bit assembly is an assembly-inspired language that uses bits rather than bytes.
 Not that it's not actually assembly.
 Note that this isn't a serious project and that it is mostly a joke about mixing a hard to use group of languages with a data type that is awkward to manage.
-Also note that programs written with Bit Assembly are going to be pretty slow, due to the nature of bignums and lazy programmer inefficiencies. 
+Also note that programs written with Bit Assembly are going to be pretty slow, due to the nature of bignums and lazy programmer inefficiencies.
 
 ## Basics ##
 Data in bit asm is stored(of course) as a sequence of bits.
 
 Quick 'Hello, World!' example:
-```
+```asm
 push 256
 mov [0:1024], "Hello, World!"
 ext print, "hello, World!"
@@ -25,7 +25,7 @@ A pointer is denoted with square brackets, e.g. `[2]` refers to bit 2 and `[8:16
 
 ### Comments ###
 Comments are anything after a semicolon:
-```
+```asm
 ;this is a comment
 mov [0], 0 ;this is also a comment
 ```
@@ -65,14 +65,14 @@ Instructions tell the compiler what to do. They are very similar to instructions
 ### MOV ###
 the `mov` instruction can copy values into memory with the format `mov destination, source` where destination is a pointer and source is a any value.
 Examples:
-```
+```asm
 mov [0], 1        ; set address 0 to 1
 mov [8:8], 200    ; set addresses 8:8 to 200
 mov [16:8], [8:8] ; copy [8:8] to [16:8]
 ```
 
 You can not `mov` a larger value into a smaller balue;
-```
+```asm
 mov [0:3], 128   ;128 will not fit into 3 bits(minimum 8 bits)
 
 mov [0:4], 2     ;assign first four bits to two
@@ -85,7 +85,7 @@ mov [0:4], [0:2] ;This does work, since 2 bits can be coerced into four.
 ### NOT operator ###
 The NOT operator has the format `not destination, source`, where destination is a pointer and source is any value. NOT will take the value of 'source,' invert each bit, and assign 'destination' to the result.
 Example:
-```
+```asm
 mov [0],  0  ;set memory location 0 to 0
 not [1], [0] ;set memory location 1 to the inverse of the value in memory location 0 (not 0 = 1)
 
@@ -102,25 +102,79 @@ Bits can be operated on with the arithmetic operators such as ADD and SUB.
 ADD and SUB both take the format `add destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 
 The ADD operator will take the values of op1 and op2, and add them together:
-```
+```asm
 add [0:8], 40, 40 ;assign memory location 0 to 40 + 40, which is 80
 ```
 
 The SUB operator will take the value of op1, subtract op2, and assign it to destination:
-```
+```asm
 sub [0:8], 100, 33 ;assign memory location 0 to 100 + 30, which is 70
 ```
 
 ### MUL ###
 The MUL operator is used to multiply two values and store it into another. It takes the format `mul destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 Example:
-```
+```asm
 mul [0:8], 8, 12 ;assign memory location 0 to 8 * 12, which is 96.
 ```
 
 ### DIV ###
 The DIV operator divides one number by another and assigns the result to destination. It takes the format `div destination, op1, op2` where destination is a pointer, op1 and op2 are values, and destination, op1, and op2 all have the same size and are all bytes.
 Example:
-```
+```asm
 div [0:8], 200, 5 ;assign memory location 0 to 200/5, which is 40.
 ```
+
+## Control Flow ##
+The control flow can be controlled using jumps and calls, much like other assembly languages.
+
+### Jumps ###
+A basic jump can be done with the 'jmp' instruction. It takes the format 'jmp label', where label is a valid label name.
+
+Comparative jumps can be achieved with other instructions. Such instructions include 'je op1, op2, label' which jumps to 'label' if op1 is equal to op2.
+
+Other Jumps include the following:
+
+ * jl: jump less than
+ * jle: jump less than or equal to
+ * jg: jump greater than
+ * jge: jump greater than or equal to
+ * jne: jump not equal to
+
+### Calls ###
+Bit Assembly also includes a call stack. The `call` instruction pushes is similar to the `jmp` instruction, but it also adds the next instruction to the call stack. When the `ret` instruction is used, it jumps to the instruction after the last call, and pops the end off of the call stack.
+
+The following example illustrates this:
+```asm
+jmp start
+
+.callme
+	ext print, "This is printed"
+	ret
+	ext print, "This is never printed"
+
+.start
+	call callme
+	ext print, "This is printed too!"
+```
+
+## Macros ##
+Bit assembly also includes a few simple macros to make using it a little easier
+
+### !define ###
+The `!define name value` macro will define a metavariable, which will replace all instances of its name with its value. Since Bit Assembly doesn't have registers, the define macro allows the programmer to define their own.
+
+```asm
+push 4
+!define register1 [0]
+!define register2 [1]
+!define register3 [2]
+!define register4 [3]
+mov register1, 0 ; set register 1 to 0
+mov register2, 1 ; set register 2 to 0
+and register3, register1, register2 ; and registers 2 and 1 together, store it into register 3.
+or  register4, register1, register2 ; or registers 2 and 1 together, store it into register 4.
+```
+
+### !include ###
+The `!include filename` macro will take load every line of another file into the assembler at its position. This is useful for splitting up code into multiple files.

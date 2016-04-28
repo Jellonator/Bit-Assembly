@@ -119,24 +119,39 @@ impl Assembler {
 	}
 
 	fn parse_defines(&self, line:&String) -> String {
-		let mut ret = String::new();
-		for c in line.chars() {
-			match c {
-				',' => ret.push_str(" , "),
-				'[' => ret.push_str(" [ "),
-				']' => ret.push_str(" ] "),
-				':' => ret.push_str(" : "),
-				'-' => ret.push_str(" - "),
-				other => ret.push(other)
+		let mut sepchars:Vec<char> = Vec::new();
+		let strings:Vec<&str> = line.split(|c:char| {
+			if c.is_whitespace() {
+				sepchars.push(c);
+				return true;
 			}
-		}
-		ret.split_whitespace().map(|w|{
+			match c {
+				',' | '[' | ']' | ':' | '-' => {
+					sepchars.push(c);
+					true
+				},
+				other => false
+			}
+		}).collect::<Vec<&str>>();
+		sepchars.reverse();
+		strings.iter().map(|w|{
+			let mut ret = String::new();
+			let mut did = false;
 			for def in &self.defines {
-				if def.0 == w {
-					return format!("{} ", def.1);
+				if def.0 == *w {
+					ret.push_str(&format!("{}", def.1));
+					did = true;
+					break;
 				}
 			}
-			return format!("{} ", w);
+			if !did {
+				ret.push_str(&format!("{}", w));
+			}
+			match sepchars.pop() {
+				Some(c) => ret.push(c),
+				None => {}
+			};
+			ret
 		}).collect::<String>()
 	}
 
