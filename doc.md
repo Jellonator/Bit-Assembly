@@ -15,7 +15,7 @@ Quick 'Hello, World!' example:
 ```asm
 push 256
 mov [0:256], "Hello, World!"
-ext print, "hello, World!"
+ext print, [0:256]
 ```
 
 Look over the provided 'examples' for more examples.
