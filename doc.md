@@ -184,4 +184,5 @@ The `!include [filename]` macro will take every line of another file and load it
 
 ## Miscellaneous ##
 There are a few other minor features of Bit Assembly too. A few of them are listed below:
- * The @ symbol: putting it in front of a pointer will give the position of the pointer. Using `@[-0]` results in the length of the stack. Putting it in front of a literal results in undefined behavior.
+ * The < symbol: putting it in front of a pointer will give the position of the pointer. Using `<[-0]` results in the length of the stack. Putting it in front of a literal results in undefined behavior.
+ * The > symbol: putting it in front of a pointer will give the position after the pointer. `>[0]` gives 1, and `>[100:32]` gives 132.

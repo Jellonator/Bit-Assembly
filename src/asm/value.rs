@@ -10,7 +10,7 @@ pub enum Value {
 	Boolvec (Vec<bool>),
 	Bignum (gmp::mpz::Mpz),
 	Pointer {pos:Box<Value>, len:Box<Value>, rev:bool},
-	Position (Box<Value>)
+	Position (Box<Value>, bool)
 }
 
 impl fmt::Display for Value {
@@ -22,7 +22,12 @@ impl fmt::Display for Value {
 				let negative_str = match *rev{ true => "-", false => "" };
 				write!(f, "[{}{}:{}]", negative_str, pos, len)
 			},
-			Value::Position(ref ptr) => write!(f, "@{}", format!("{}", ptr))
+			Value::Position(ref ptr, rev) => {
+				write!(f, "{}{}", match rev{
+					true => '>',
+					false => '<'
+				}, format!("{}", ptr))
+			}
 		}
 	}
 }
@@ -60,8 +65,12 @@ impl Value {
 				let bits = env.slice(pos, pos + size);
 				boolvec_to_bignum(bits)
 			},
-			Value::Position(ref data) => {
-				usize_to_bignum(data.get_ptr_position(env))
+			Value::Position(ref ptr, rev) => {
+				let mut pos = ptr.get_ptr_position(env);
+				if rev {
+					pos += ptr.get_ptr_size(env);
+				}
+				usize_to_bignum(pos)
 			}
 		}
 	}
@@ -76,8 +85,12 @@ impl Value {
 				let bits = env.slice(pos, pos + size);
 				bits.to_vec()
 			},
-			Value::Position(ref ptr) => {
-				usize_to_boolvec(ptr.get_ptr_position(env))
+			Value::Position(ref ptr, rev) => {
+				let mut pos = ptr.get_ptr_position(env);
+				if rev {
+					pos += ptr.get_ptr_size(env);
+				}
+				usize_to_boolvec(pos)
 			}
 		}
 	}
@@ -94,7 +107,13 @@ impl Value {
 			Value::Pointer{ref len, ..} => len.get_usize(env) <= new_size,
 			Value::Boolvec(ref vec) => vec.len() <= new_size,
 			Value::Bignum(ref num) => num.bit_length() <= new_size,
-			Value::Position(ref ptr) => usize_len(ptr.get_ptr_position(env)) <= new_size,
+			Value::Position(ref ptr, rev) => {
+				let mut pos = ptr.get_ptr_position(env);
+				if rev {
+					pos += ptr.get_ptr_size(env);
+				}
+				usize_len(pos) <= new_size
+			}
 		}
 	}
 
@@ -103,7 +122,13 @@ impl Value {
 			Value::Pointer{ref len, ..} => len.get_usize(env),
 			Value::Boolvec(ref vec) => vec.len(),
 			Value::Bignum(ref num) => num.bit_length(),
-			Value::Position(ref ptr) => usize_len(ptr.get_ptr_position(env))
+			Value::Position(ref ptr, rev) => {
+				let mut pos = ptr.get_ptr_position(env);
+				if rev {
+					pos += ptr.get_ptr_size(env);
+				}
+				usize_len(pos)
+			}
 		}
 	}
 
@@ -163,11 +188,18 @@ impl Value {
 			}
 			return Some(Value::Boolvec(boolvec));
 
-		} else if value.chars().next() == Some('@') {
+		} else if value.chars().next() == Some('<') {
 			return Some(Value::Position(
 				Box::new(
 					Value::new(&value[1..]).expect("Not a valid value for pointer!")
-				)
+				), false
+			));
+
+		} else if value.chars().next() == Some('>') {
+			return Some(Value::Position(
+				Box::new(
+					Value::new(&value[1..]).expect("Not a valid value for pointer!")
+				), true
 			));
 
 		} else {

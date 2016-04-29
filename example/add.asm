@@ -1,5 +1,5 @@
 push 512
-!define top @[-0]
+!define top <[-0]
 !define rax [0:64]
 !define rbx [64:64]
 !define rcx [128:64]

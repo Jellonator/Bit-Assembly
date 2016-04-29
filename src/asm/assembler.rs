@@ -129,7 +129,7 @@ impl Assembler {
 				return true;
 			}
 			match c {
-				',' | '[' | ']' | ':' | '-' => {
+				',' | '[' | ']' | ':' | '-' | '<' | '>' => {
 					sepchars.push(c);
 					true
 				},
