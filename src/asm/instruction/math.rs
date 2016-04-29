@@ -109,7 +109,7 @@ impl Instruction for Mod {
 	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
 		assert!(args.len() == 3, "Instruction 'mod' requires 3 arguments.");
 		Box::new(
-			Div {
+			Mod {
 				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
 				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
 				op2: Value::new(args[2]).expect("Argument 2 is invalid.")

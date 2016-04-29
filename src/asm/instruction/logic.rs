@@ -87,7 +87,7 @@ impl Instruction for Not {
 		assert!(args.len() == 2, "Instruction 'not' requires 2 arguments.");
 		Box::new(
 			Not {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
+				to: Value::new(args[0]).expect("Argument 0 is invalid."),
 				op: Value::new(args[1]).expect("Argument 1 is invalid.")
 			}
 		)
@@ -103,6 +103,7 @@ impl Instruction for Not {
 			val[i] = !val[i];
 		}
 		let size = self.to.get_size(env);
+		val.resize(size, true);
 		env.set_bits_boolvec(val.as_slice(), pos, size)
 	}
 }

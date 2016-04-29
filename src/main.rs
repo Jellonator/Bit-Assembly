@@ -106,7 +106,9 @@ fn add_external_calls(asm:&mut Assembler) {
 
 fn load_text(asm: &mut Assembler, code: &str) {
 	for line in code.lines() {
-		asm.parse_line(&line.to_string());
+		for s in line.split(';') {
+			asm.parse_line(&s.to_string());
+		}
 	}
 }
 
@@ -136,6 +138,7 @@ fn main() {
 		ArgType{name:"help".to_string(), short:Some("h".to_string()), arg:Req::No},
 		ArgType{name:"file".to_string(), short:Some("h".to_string()), arg:Req::Yes},
 		ArgType{name:"text".to_string(), short:Some("h".to_string()), arg:Req::Yes},
+		ArgType{name:"print-stack".to_string(),  short:Some("s".to_string()), arg:Req::Maybe},
 		ArgType{name:"print-parsed".to_string(), short:Some("p".to_string()), arg:Req::No},
 	];
 
@@ -192,10 +195,12 @@ fn main() {
 	}
 
 	let do_print_parsed = args.contains_key("print-parsed");
+	let do_stack_print = args.contains_key("print-stack");
 
 	let mut env = Environment::new();
 	let mut asm = Assembler::new(do_print_parsed);
 	add_external_calls(&mut asm);
+	let mut do_run = false;
 
 	if args.contains_key("help") {
 		println!("{}",
@@ -208,13 +213,21 @@ Usage:
 
 	} else if args.contains_key("file") {
 		load_file(&mut asm, args.get("file").expect("This shouldnt happen"));
+		do_run = true;
 
 	} else if args.contains_key("text") {
 		load_text(&mut asm, args.get("text").expect("This shouldnt happen"));
+		do_run = true;
 
 	} else {
 		println!("type 'bit-asm --help' for help on how to use bit assembly");
 	}
-
-	asm.run(&mut env);
+	if do_run {
+		asm.run(&mut env);
+		if do_stack_print {
+			let bits = usize::from_str(args.get("print-stack").unwrap_or(&"64".to_string()))
+				.expect("print-stack argument is not valid!");
+			env.print_bytes(bits);
+		}
+	}
 }

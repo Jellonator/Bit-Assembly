@@ -2,7 +2,6 @@ push 512
 
 jmp start
 
-!define top <[-0]
 !define rax [0:8]
 !define rbx [8:8]
 !define rcx [16:8]
@@ -19,7 +18,7 @@ jmp start
 
 .start
 	ext print, "\n"
-	
+
 	mov rcx, b11001100
 	mov rax, <rcx
 	mov rbx, >rcx
