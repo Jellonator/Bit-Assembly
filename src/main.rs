@@ -1,4 +1,5 @@
 extern crate gmp;
+extern crate time;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -36,7 +37,6 @@ fn add_external_calls(asm:&mut Assembler) {
 			io::stdout().flush().ok().expect("Could not flush stdout");
 		}
 	});
-
 	asm.add_external_call("valid", |v,e,_a| {
 		let pos = v.get_ptr_position(e);
 		let num = match e.validity {
@@ -54,10 +54,6 @@ fn add_external_calls(asm:&mut Assembler) {
 		for line in input.lines() {
 			e.input_string.push_str(line.as_ref());
 		}
-		//let boolvec = str_to_boolvec(input.as_ref());
-		//let pos = v.get_ptr_position(e);
-		//let size = v.get_size(e);
-		//e.set_bits_boolvec(boolvec.as_slice(), pos, size);
 	});
 	asm.add_external_call("inputnumlen", |v,e,_|{
 		e.validity = true;
@@ -97,6 +93,14 @@ fn add_external_calls(asm:&mut Assembler) {
 		let pos = v.get_ptr_position(e);
 		let size = v.get_size(e);
 		e.set_bits_bignum(&num, pos, size);
+	});
+
+	asm.add_external_call("random", move |v,e,_|{
+		let val = v.get_bignum(e);
+		let result = e.randstate.urandom(&val);
+		let pos = v.get_ptr_position(e);
+		let size = v.get_ptr_size(e);
+		e.set_bits_bignum(&result, pos, size);
 	});
 }
 

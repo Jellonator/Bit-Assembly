@@ -1,4 +1,5 @@
 extern crate gmp;
+extern crate time;
 use super::util::*;
 use super::assembler::Assembler;
 use std::mem::size_of;
@@ -8,19 +9,23 @@ pub struct Environment {
 	callstack: Vec<usize>,
 	pub instruction: usize,
 	pub validity: bool,
-	pub input_string: String
+	pub input_string: String,
+	pub randstate: gmp::rand::RandState
 }
 
 #[allow(dead_code)]
 impl Environment {
 	pub fn new() -> Environment {
-		Environment {
+		let mut ret = Environment {
 			stack: Vec::new(),
 			callstack: Vec::new(),
 			instruction: 0,
 			validity: true,
-			input_string: "".to_string()
-		}
+			input_string: "".to_string(),
+			randstate: gmp::rand::RandState::new()
+		};
+		ret.randstate.seed_ui(time::get_time().sec as u64);
+		ret
 	}
 
 	pub fn stack_len(&self) -> usize {

@@ -7,3 +7,4 @@ authors = [ "Jellonator <jellonator00@gmail.com>" ]
 [dependencies]
 regex = "*"
 rust-gmp = "0.3.0"
+time = "*"
