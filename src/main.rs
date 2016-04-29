@@ -46,23 +46,32 @@ fn add_external_calls(asm:&mut Assembler) {
 		let size = v.get_size(e);
 		e.set_bits_bignum(&num, pos, size);
 	});
-	asm.add_external_call("prompt", |v,e,_|{
+	asm.add_external_call("prompt", |_v,e,_a|{
 		let mut input = String::new();
 		io::stdin().read_line(&mut input).expect("Invalid Input!");
 		e.input_string = "".to_string();
-		let mut first_line = true;
+
 		for line in input.lines() {
-			if first_line {
-				first_line = false;
-			} else {
-				e.input_string.push('\n');
-			}
 			e.input_string.push_str(line.as_ref());
 		}
 		//let boolvec = str_to_boolvec(input.as_ref());
 		//let pos = v.get_ptr_position(e);
 		//let size = v.get_size(e);
 		//e.set_bits_boolvec(boolvec.as_slice(), pos, size);
+	});
+	asm.add_external_call("inputnumlen", |v,e,_|{
+		e.validity = true;
+		let num = match gmp::mpz::Mpz::from_str(e.input_string.as_ref()) {
+			Ok(val) => val,
+			Err(_) => {
+				e.validity = false;
+				gmp::mpz::Mpz::zero()
+			}
+		};
+		let num_size = num.bit_length();
+		let pos = v.get_ptr_position(e);
+		let size = v.get_ptr_size(e);
+		e.set_bits_usize(num_size, pos, size);
 	});
 	asm.add_external_call("inputlen", |v,e,_|{
 		let len_bits = e.input_string.len() * 8;
@@ -91,33 +100,19 @@ fn add_external_calls(asm:&mut Assembler) {
 	});
 }
 
-fn load_text(code:&str) {
-	let mut env = Environment::new();
-	let mut asm = Assembler::new();
-
-	add_external_calls(&mut asm);
-
+fn load_text(asm: &mut Assembler, code: &str) {
 	for line in code.lines() {
 		asm.parse_line(&line.to_string());
 	}
-
-	asm.run(&mut env);
 }
 
-fn load_file(file_name:&str) {
-	let mut env = Environment::new();
-	let mut asm = Assembler::new();
-
-	add_external_calls(&mut asm);
-
+fn load_file(asm: &mut Assembler, file_name:&str) {
 	let file = File::open(file_name).unwrap();
 	let buffer = BufReader::new(&file);
 	for line in buffer.lines() {
 		let l:String = line.unwrap();
 		asm.parse_line(&l);
 	}
-
-	asm.run(&mut env);
 }
 
 enum Req {
@@ -136,7 +131,8 @@ fn main() {
 	let valid_args = vec![
 		ArgType{name:"help".to_string(), short:Some("h".to_string()), arg:Req::No},
 		ArgType{name:"file".to_string(), short:Some("h".to_string()), arg:Req::Yes},
-		ArgType{name:"text".to_string(), short:Some("h".to_string()), arg:Req::Yes}
+		ArgType{name:"text".to_string(), short:Some("h".to_string()), arg:Req::Yes},
+		ArgType{name:"print-parsed".to_string(), short:Some("p".to_string()), arg:Req::No},
 	];
 
 	let mut args:HashMap<String, String> = HashMap::new();
@@ -177,6 +173,8 @@ fn main() {
 
 			if arg_name == "" {
 				panic!("No such argument of name '{}'!", element);
+			} else {
+				current_arg_name = arg_name;
 			}
 
 			args.insert(current_arg_name.clone(), "".to_string());
@@ -189,6 +187,12 @@ fn main() {
 		}
 	}
 
+	let do_print_parsed = args.contains_key("print-parsed");
+
+	let mut env = Environment::new();
+	let mut asm = Assembler::new(do_print_parsed);
+	add_external_calls(&mut asm);
+
 	if args.contains_key("help") {
 		println!("{}",
 "Welcome to Bit Assembly!
@@ -199,12 +203,14 @@ Usage:
     bit-asm --text {assembly}");
 
 	} else if args.contains_key("file") {
-		load_file(args.get("file").expect("This shouldnt happen"));
+		load_file(&mut asm, args.get("file").expect("This shouldnt happen"));
 
 	} else if args.contains_key("text") {
-		load_text(args.get("text").expect("This shouldnt happen"));
+		load_text(&mut asm, args.get("text").expect("This shouldnt happen"));
 
 	} else {
 		println!("type 'bit-asm --help' for help on how to use bit assembly");
 	}
+
+	asm.run(&mut env);
 }

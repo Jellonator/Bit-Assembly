@@ -100,12 +100,10 @@ pub fn usize_len(num:usize) -> usize {
 
 pub fn usize_to_boolvec(num: usize) -> Vec<bool> {
 	let mut ret = vec![];
-	let mut i = 0;
 	let mut num = num;
 	while num != 0 {
 		ret.push(num % 2 == 1);
 		num /= 2;
-		i += 1;
 	}
 	ret
 }

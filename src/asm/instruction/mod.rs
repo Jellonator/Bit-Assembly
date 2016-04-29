@@ -11,8 +11,10 @@ pub trait Instruction {
 	fn exec(&self, env: &mut Environment, asm: &Assembler);
 }
 
-pub fn create_instruction(name: &str, arguments: &[&str]) -> Box<Instruction> {
-	// println!("{}: {}", name, arguments.join(", "));
+pub fn create_instruction(name: &str, arguments: &[&str], asm: &Assembler) -> Box<Instruction> {
+	if asm.print_parsed {
+		println!("{}: {}", name, arguments.join(", "));
+	}
 	match name {
 		"push" => mem::Push::new(name, arguments),
 		"pop"  => mem::Pop::new(name, arguments),

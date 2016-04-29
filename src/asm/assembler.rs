@@ -17,7 +17,8 @@ pub struct Assembler {
 	code:       Vec<Box<Instruction>>,
 	pub labels: HashMap<String, usize>,
 	defines:    Vec<(String, String)>,
-	pub ext_calls:  HashMap<String, Box<Fn(&Value, &mut Environment, &Assembler)>>
+	pub ext_calls:  HashMap<String, Box<Fn(&Value, &mut Environment, &Assembler)>>,
+	pub print_parsed: bool
 }
 
 impl Assembler {
@@ -70,18 +71,20 @@ impl Assembler {
 		self.ext_calls.insert(name.to_string(), Box::new(external));
 	}
 
-	pub fn new() -> Assembler {
+	pub fn new(do_print_parsed: bool) -> Assembler {
 		Assembler {
-			code:      Vec::new(),
-			labels:    HashMap::new(),
-			defines:   Vec::new(),
-			ext_calls: HashMap::new(),
+			code:         Vec::new(),
+			labels:       HashMap::new(),
+			defines:      Vec::new(),
+			ext_calls:    HashMap::new(),
+			print_parsed: do_print_parsed
 		}
 	}
 
 	//private because reasons
 	fn parse_args(&mut self, iname: &String, arguments: &[&str]){
-		self.code.push(create_instruction(iname.as_ref(), arguments));
+		let instruction = create_instruction(iname.as_ref(), arguments, self);
+		self.code.push(instruction);
 	}
 
 	fn parse_macros(&mut self, line: &String) -> bool {
@@ -130,7 +133,7 @@ impl Assembler {
 					sepchars.push(c);
 					true
 				},
-				other => false
+				_ => false
 			}
 		}).collect::<Vec<&str>>();
 		sepchars.reverse();

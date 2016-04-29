@@ -61,7 +61,7 @@ impl Environment {
 
 	pub fn set_bits_usize(&mut self, num: usize, pos:usize, len:usize) {
 		for i in 0..len {
-			self.stack[pos + i] = match i < size_of::<usize>() {
+			self.stack[pos + i] = match i < size_of::<usize>()*8 {
 				true => num & (1 << i) != 0,
 				false => false,
 			}

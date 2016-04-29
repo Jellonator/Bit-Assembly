@@ -3,27 +3,45 @@ use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
 
-pub struct Push(Value);
-pub struct Pop(Value);
+pub struct Push( Value, Option<Value> );
+pub struct Pop( Value);
 pub struct Mov{ to: Value, from: Value }
 
 impl Instruction for Push {
 	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 1, "Instruction 'push' requires 1 argument.");
+		assert!(
+			args.len() == 1 || args.len() == 2,
+			"Instruction 'push' requires 1 or 2 arguments."
+		);
+		let val = match args.len() >= 2 {
+			true => Value::new(args[1]),
+			false => None
+		};
 		Box::new(
-			Push(Value::new(args[0]).expect("Argument 0 is not valid."))
+			Push(
+				Value::new(args[0]).expect("Argument 0 is not valid."),
+				val
+			)
 		)
 	}
 
 	fn exec(&self, env: &mut Environment, _: &Assembler) {
 		let size = self.0.get_usize(env);
+		let pos = env.stack_len();
 		env.push(size, false);
+		match self.1 {
+			Some(ref val) => {
+				let num = val.get_bignum(env);
+				env.set_bits_bignum(&num, pos, size);
+			},
+			None => {}
+		}
 	}
 }
 
 impl Instruction for Pop {
 	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 1, "Instruction 'push' requires 1 argument.");
+		assert!(args.len() == 1, "Instruction 'pop' requires 1 arguments.");
 		Box::new(
 			Pop(Value::new(args[0]).expect("Argument 0 is not valid."))
 		)

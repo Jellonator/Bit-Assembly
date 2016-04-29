@@ -18,6 +18,8 @@ mov [0:256], "Hello, World!"
 ext print, "hello, World!"
 ```
 
+Look over the provided 'examples' for more examples.
+
 ### Literals ###
 literals are denoted without any special symbols, e.g. `1234`, a base-10 numeric literal, `0b1100`, a base-2 binary literal, or `"foobar"`, a string literal which is converted into a binary literal.
 
@@ -179,3 +181,7 @@ or  register4, register1, register2 ; or registers 2 and 1 together, store it in
 
 ### !include ###
 The `!include [filename]` macro will take every line of another file and load it into the assembler at the position of the macro. This is useful for splitting up code into multiple files.
+
+## Miscellaneous ##
+There are a few other minor features of Bit Assembly too. A few of them are listed below:
+ * The @ symbol: putting it in front of a pointer will give the position of the pointer. Using `@[-0]` results in the length of the stack. Putting it in front of a literal results in undefined behavior.
