@@ -2,6 +2,7 @@ use super::super::value::Value;
 use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
+use super::super::error::*;
 
 pub struct Add{ to: Value, op1: Value, op2: Value }
 pub struct Sub{ to: Value, op1: Value, op2: Value }
@@ -10,13 +11,14 @@ pub struct Div{ to: Value, op1: Value, op2: Value }
 pub struct Mod{ to: Value, op1: Value, op2: Value }
 
 impl Instruction for Add {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'add' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Add {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -34,13 +36,14 @@ impl Instruction for Add {
 }
 
 impl Instruction for Sub {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Sub {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -58,13 +61,14 @@ impl Instruction for Sub {
 }
 
 impl Instruction for Mul {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'mul' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Mul {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -82,13 +86,14 @@ impl Instruction for Mul {
 }
 
 impl Instruction for Div {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'div' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Div {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -106,13 +111,14 @@ impl Instruction for Div {
 }
 
 impl Instruction for Mod {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'mod' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Mod {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}

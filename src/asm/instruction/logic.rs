@@ -2,6 +2,7 @@ use super::super::value::Value;
 use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
+use super::super::error::*;
 
 pub struct And { to: Value, op1: Value, op2: Value }
 pub struct Or { to: Value, op1: Value, op2: Value }
@@ -11,13 +12,14 @@ pub struct LShift { to: Value, op1: Value, op2:Value }
 pub struct RShift { to: Value, op1: Value, op2:Value }
 
 impl Instruction for And {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'and' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			And {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -35,13 +37,14 @@ impl Instruction for And {
 }
 
 impl Instruction for Or {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Or {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -59,13 +62,14 @@ impl Instruction for Or {
 }
 
 impl Instruction for Xor {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			Xor {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -83,12 +87,13 @@ impl Instruction for Xor {
 }
 
 impl Instruction for Not {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 2, "Instruction 'not' requires 2 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(2));
+
 		Box::new(
 			Not {
-				to: Value::new(args[0]).expect("Argument 0 is invalid."),
-				op: Value::new(args[1]).expect("Argument 1 is invalid.")
+				to: Value::new(args[0], err, true),
+				op: Value::new(args[1], err, false)
 			}
 		)
 	}
@@ -109,13 +114,14 @@ impl Instruction for Not {
 }
 
 impl Instruction for LShift {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			LShift {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}
@@ -133,13 +139,14 @@ impl Instruction for LShift {
 }
 
 impl Instruction for RShift {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 3, "Instruction 'sub' requires 3 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(3));
+
 		Box::new(
 			RShift {
-				to:  Value::new(args[0]).expect("Argument 0 is invalid."),
-				op1: Value::new(args[1]).expect("Argument 1 is invalid."),
-				op2: Value::new(args[2]).expect("Argument 2 is invalid.")
+				to:  Value::new(args[0], err, true),
+				op1: Value::new(args[1], err, false),
+				op2: Value::new(args[2], err, false)
 			}
 		)
 	}

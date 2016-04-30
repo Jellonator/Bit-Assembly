@@ -7,7 +7,7 @@ const ARGUMENT_CHAR:char = ',';
 use super::environment::Environment;
 use super::instruction::Instruction;
 use super::instruction::create_instruction;
-use super::error::Error;
+use super::error::*;
 use super::util::*;
 use std::collections::HashMap;
 use std::fs::File;
@@ -83,31 +83,31 @@ impl Assembler {
 	}
 
 	//private because reasons
-	fn parse_args(&mut self, iname: &String, arguments: &[&str]){
-		let instruction = create_instruction(iname.as_ref(), arguments, self);
+	fn parse_args(&mut self, iname: &String, arguments: &[&str], err: &Error){
+		let instruction = create_instruction(iname.as_ref(), arguments, self, err);
 		self.code.push(instruction);
 	}
 
-	fn parse_macros(&mut self, line: &String) -> bool {
+	fn parse_macros(&mut self, line: &String, err: &Error) -> bool {
 		//macro
 		if line.chars().next() == Some('!') {
 			let macro_text = line[1..].trim();
-			let macro_args:Vec<&str> = macro_text.split_whitespace().collect();
-			let macro_total_args:&str = &macro_text[macro_args[0].len()..].trim();
+			let mut macro_args:Vec<&str> = macro_text.split_whitespace().collect();
 			if macro_args.len() < 1 {
-				panic!("Empty macro!");
+				err.throw(ErrorType::Empty("macro".to_string()))
 			}
-			match macro_args[0] {
+			let macro_name = macro_args[0];
+			let macro_total_args:&str = &macro_text[macro_name.len()..].trim();
+			macro_args.remove(0);
+			match macro_name {
 				"define" => {
-					if macro_args.len() < 3 {
-						panic!("Macro 'define' requires at least 3 arguments!");
-					}
-					let name = macro_args[1].to_string();
-					let args = macro_args[2..].join(" ");
-					//println!("Defined '{}' as '{}'", name, args);
+					err.check_args("macro", macro_name, macro_args.len(), ArgumentType::AtLeast(2));
+					let name = macro_args[0].to_string();
+					let args = macro_args[1..].join(" ");
 					self.defines.push((name, args));
 				},
 				"include" => {
+					err.check_args("macro", macro_name, macro_args.len(), ArgumentType::AtLeast(1));
 					let file = File::open(macro_total_args).unwrap();
 					let buffer = BufReader::new(&file);
 					let mut linenum = 0;
@@ -117,7 +117,10 @@ impl Assembler {
 						self.parse_line(&l, linenum, Some(macro_total_args.to_string()));
 					}
 				},
-				name => panic!("Unknown macro name {}!", name)
+				name => err.throw(ErrorType::NonExistent{
+					typename:"macro".to_string(),
+					value:name.to_string()
+				})
 			}
 			return true;
 		}
@@ -177,13 +180,13 @@ impl Assembler {
 		line = line.trim().to_string();
 
 		//Create error handler
-		let error = Error::new(line.clone(), linenum, filename);
+		let err = Error::new(line.clone(), linenum, filename);
 
 		//parse strings into 'b10101010' format
 		line = self.parse_strings(&line);
 
 		//use macros and labels
-		if self.parse_macros(&line) {
+		if self.parse_macros(&line, &err) {
 			return;
 		}
 		if self.parse_labels(&line) {
@@ -208,7 +211,7 @@ impl Assembler {
 			.filter(|val|val.trim() != "")
 			.collect();
 
-		self.parse_args(&name, &arg_vec);
+		self.parse_args(&name, &arg_vec, &err);
 	}
 
 	pub fn run(&mut self, env: &mut Environment) {

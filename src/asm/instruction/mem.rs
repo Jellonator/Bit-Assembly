@@ -2,24 +2,23 @@ use super::super::value::Value;
 use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
+use super::super::error::*;
 
 pub struct Push( Value, Option<Value> );
 pub struct Pop( Value);
 pub struct Mov{ to: Value, from: Value }
 
 impl Instruction for Push {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(
-			args.len() == 1 || args.len() == 2,
-			"Instruction 'push' requires 1 or 2 arguments."
-		);
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Range(1, 2));
+
 		let val = match args.len() >= 2 {
-			true => Value::new(args[1]),
+			true => Some(Value::new(args[1], err, false)),
 			false => None
 		};
 		Box::new(
 			Push(
-				Value::new(args[0]).expect("Argument 0 is not valid."),
+				Value::new(args[0], err, false),
 				val
 			)
 		)
@@ -40,10 +39,11 @@ impl Instruction for Push {
 }
 
 impl Instruction for Pop {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 1, "Instruction 'pop' requires 1 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(1));
+
 		Box::new(
-			Pop(Value::new(args[0]).expect("Argument 0 is not valid."))
+			Pop(Value::new(args[0], err, false))
 		)
 	}
 
@@ -54,12 +54,13 @@ impl Instruction for Pop {
 }
 
 impl Instruction for Mov {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 2, "Instruction 'mov' requires 2 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(2));
+
 		Box::new(
 			Mov {
-				to: Value::new(args[0]).expect("Argument 0 is not valid."),
-				from: Value::new(args[1]).expect("Argument 1 is not valid."),
+				to: Value::new(args[0], err, true),
+				from: Value::new(args[1], err, false),
 			}
 		)
 	}

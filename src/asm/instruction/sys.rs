@@ -4,14 +4,16 @@ use super::super::value::Value;
 use super::super::environment::Environment;
 use super::super::assembler::Assembler;
 use super::Instruction;
+use super::super::error::*;
 
 pub struct Ret;
 pub struct Call(String);
 pub struct Ext{name: String, val: Value}
 
 impl Instruction for Ret {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 0, "Instruction 'ret' takes no arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(0));
+
 		Box::new(
 			Ret
 		)
@@ -23,8 +25,9 @@ impl Instruction for Ret {
 }
 
 impl Instruction for Call {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() == 1, "Instruction 'call' takes 1 argument.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Exact(1));
+
 		Box::new(
 			Call(args[0].to_string())
 		)
@@ -36,10 +39,11 @@ impl Instruction for Call {
 }
 
 impl Instruction for Ext {
-	fn new(_: &str, args: &[&str]) -> Box<Instruction> {
-		assert!(args.len() <= 2, "Instruction 'ext' takes at most 2 arguments.");
+	fn new(name: &str, args: &[&str], err: &Error) -> Box<Instruction> {
+		err.check_args("instruction", name, args.len(), ArgumentType::Range(1, 2));
+
 		let value = match args.len() == 2 {
-			true => Value::new(args[1]).expect("Argument '1' is invalid."),
+			true => Value::new(args[1], err, false),
 			false => Value::Bignum(gmp::mpz::Mpz::one())
 		};
 		Box::new(

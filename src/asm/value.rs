@@ -5,6 +5,7 @@ use self::regex::Regex;
 use std::str::FromStr;
 use super::environment::Environment;
 use super::util::*;
+use super::error::*;
 
 pub enum Value {
 	Boolvec (Vec<bool>),
@@ -47,7 +48,7 @@ impl Value {
 				true => env.stack_len() - pos.get_usize(env),
 				false => pos.get_usize(env)
 			},
-			_ => panic!("This value is not a pointer!")
+			_ => panic!("This value, {}, is not a pointer!", self)
 		}
 	}
 
@@ -98,7 +99,7 @@ impl Value {
 	pub fn get_ptr_size(&self, env: &Environment) -> usize {
 		match *self {
 			Value::Pointer{ref len, ..} => len.get_usize(env),
-			_ => panic!("This value is not a pointer!")
+			_ => panic!("This value, {}, is not a pointer!", self)
 		}
 	}
 
@@ -132,7 +133,18 @@ impl Value {
 		}
 	}
 
-	pub fn new(value:&str) -> Option<Value> {
+	pub fn new(value:&str, err: &Error, require_pointer: bool) -> Value {
+		let ret = match Value::create(value, err) {
+			Some(ret) => ret,
+			None => err.throw(ErrorType::InvalidValue(value.to_string()))
+		};
+		if require_pointer && !ret.is_ptr() {
+			err.throw(ErrorType::InvalidPointer(ret));
+		};
+		ret
+	}
+
+	fn create(value:&str, err: &Error) -> Option<Value> {
 		let value = value.trim();
 		//println!("Parsing: '{}'", value);
 		let re_ptr = Regex::new(r"^\[(.*?)\]$").unwrap();
@@ -164,8 +176,8 @@ impl Value {
 				}
 			}
 			if args.1 == "" {args.1 = "1".to_string();}
-			let position = Value::new(&args.0);
-			let length = Value::new(&args.1);
+			let position = Value::create(&args.0, err);
+			let length = Value::create(&args.1, err);
 			return match (position, length) {
 				(Some(pos_val), Some(len_val)) => {
 					Some(Value::Pointer {
@@ -183,24 +195,34 @@ impl Value {
 				boolvec.push(match c{
 					'0' => false,
 					'1' => true,
-					other => panic!("'{}' is not a valid character in a boolvec!", other)
+					other => err.throw(ErrorType::Generic(
+						format!("'{}' is not a valid character in a boolvec!", other)
+					))
 				});
 			}
 			return Some(Value::Boolvec(boolvec));
 
 		} else if value.chars().next() == Some('<') {
-			return Some(Value::Position(
-				Box::new(
-					Value::new(&value[1..]).expect("Not a valid value for pointer!")
-				), false
-			));
+			return match Value::create(&value[1..], err) {
+				Some (val) => {
+					if !val.is_ptr() {
+						err.throw(ErrorType::InvalidPointer(val));
+					}
+					Some(Value::Position(Box::new(val), false))
+				}
+				None => None
+			}
 
 		} else if value.chars().next() == Some('>') {
-			return Some(Value::Position(
-				Box::new(
-					Value::new(&value[1..]).expect("Not a valid value for pointer!")
-				), true
-			));
+			return match Value::create(&value[1..], err) {
+				Some (val) => {
+					if !val.is_ptr() {
+						err.throw(ErrorType::InvalidPointer(val));
+					}
+					Some(Value::Position(Box::new(val), true))
+				}
+				None => None
+			}
 
 		} else {
 			//Is not a pointer
