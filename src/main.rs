@@ -31,11 +31,9 @@ fn add_external_calls(asm:&mut Assembler) {
 			}
 			chars.push(c);
 		}
-		unsafe {
-			let s = String::from_utf8_unchecked(chars);
-			print!("{}", s);
-			io::stdout().flush().ok().expect("Could not flush stdout");
-		}
+		let s = String::from_utf8_lossy(chars.as_slice()).to_string();
+		print!("{}", s);
+		io::stdout().flush().ok().expect("Could not flush stdout");
 	});
 	asm.add_external_call("valid", |v,e,_a| {
 		let pos = v.get_ptr_position(e);
