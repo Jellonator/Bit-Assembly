@@ -227,7 +227,12 @@ Usage:
 	if do_run {
 		asm.run(&mut env);
 		if do_stack_print {
-			let bits = usize::from_str(args.get("print-stack").unwrap_or(&"64".to_string()))
+			let bits = usize::from_str(
+				match args.get("print-stack").unwrap_or(&"64".to_string()).as_ref() {
+					"" => "64",
+					other => other
+				}
+			)
 				.expect("print-stack argument is not valid!");
 			env.print_bytes(bits);
 		}
