@@ -105,9 +105,11 @@ fn add_external_calls(asm:&mut Assembler) {
 }
 
 fn load_text(asm: &mut Assembler, code: &str) {
+	let mut linenum = 0;
 	for line in code.lines() {
 		for s in line.split(';') {
-			asm.parse_line(&s.to_string());
+			linenum += 1;
+			asm.parse_line(&s.to_string(), linenum, None);
 		}
 	}
 }
@@ -115,9 +117,11 @@ fn load_text(asm: &mut Assembler, code: &str) {
 fn load_file(asm: &mut Assembler, file_name:&str) {
 	let file = File::open(file_name).unwrap();
 	let buffer = BufReader::new(&file);
+	let mut linenum = 0;
 	for line in buffer.lines() {
 		let l:String = line.unwrap();
-		asm.parse_line(&l);
+		linenum += 1;
+		asm.parse_line(&l, linenum, Some(file_name.to_string()));
 	}
 }
 

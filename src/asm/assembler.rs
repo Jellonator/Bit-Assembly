@@ -7,6 +7,7 @@ const ARGUMENT_CHAR:char = ',';
 use super::environment::Environment;
 use super::instruction::Instruction;
 use super::instruction::create_instruction;
+use super::error::Error;
 use super::util::*;
 use std::collections::HashMap;
 use std::fs::File;
@@ -109,9 +110,11 @@ impl Assembler {
 				"include" => {
 					let file = File::open(macro_total_args).unwrap();
 					let buffer = BufReader::new(&file);
+					let mut linenum = 0;
 					for line in buffer.lines() {
+						linenum += 1;
 						let l:String = line.unwrap();
-						self.parse_line(&l);
+						self.parse_line(&l, linenum, Some(macro_total_args.to_string()));
 					}
 				},
 				name => panic!("Unknown macro name {}!", name)
@@ -167,11 +170,14 @@ impl Assembler {
 		return false;
 	}
 
-	pub fn parse_line(&mut self, linearg: &String) {
+	pub fn parse_line(&mut self, linearg: &String, linenum: usize, filename: Option<String>) {
 		//trim and remove comments
 		let mut line:String = linearg.to_string();
 		remove_comments(&mut line, COMMENT_CHAR);
 		line = line.trim().to_string();
+
+		//Create error handler
+		let error = Error::new(line.clone(), linenum, filename);
 
 		//parse strings into 'b10101010' format
 		line = self.parse_strings(&line);
