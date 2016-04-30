@@ -4,6 +4,11 @@ An assembly language based on bits
 Check out doc.md for help on how to write in bit assembly.
 Use `bit-asm.exe --help` for help on how to use the interpreter.
 
+## Why should I use Bit Assembly?
+Why should you use Bit Assembly? That is a great question, and I am glad I live in a country that can ask questions like these. Folks, I promise to build the best language I can, ok? We will make assembly language great again.
+
+In all seriousness though, there is no reason to use this other than as a joke.
+
 ## Building:
  * Make sure you have Rust, Cargo, and GMP installed.
  * use `cargo build --release` to build the program into target/release/
