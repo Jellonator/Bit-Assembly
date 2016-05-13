@@ -13,6 +13,9 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
+use std::io;
+use std::io::Write;
+use std::str::FromStr;
 
 pub struct Assembler {
 	code:       Vec<Box<Instruction>>,
@@ -72,14 +75,104 @@ impl Assembler {
 		self.ext_calls.insert(name.to_string(), Box::new(external));
 	}
 
+	fn add_default_external_calls(asm: &mut Assembler) {
+		asm.add_external_call("printnum", |v,e,_| {
+			print!("{}", boolvec_to_bignum(v.get_boolvec(e).as_slice()));
+			io::stdout().flush().ok().expect("Could not flush stdout");
+		});
+		asm.add_external_call("print", |v,e,_| {
+			let mut chars:Vec<u8> = vec![];
+			let boolvec = v.get_boolvec(e);
+			let val = boolvec.as_slice();
+			for i in 0..(val.len()/8) {
+				let nums = &val[i*8..(i+1)*8];
+				let c = boolvec_to_u8(nums);
+				if c == 0 {
+					break;
+				}
+				chars.push(c);
+			}
+			let s = String::from_utf8_lossy(chars.as_slice()).to_string();
+			print!("{}", s);
+			io::stdout().flush().ok().expect("Could not flush stdout");
+		});
+		asm.add_external_call("valid", |v,e,_a| {
+			let pos = v.get_ptr_position(e);
+			let num = match e.validity {
+				true => gmp::mpz::Mpz::one(),
+				false => gmp::mpz::Mpz::zero()
+			};
+			let size = v.get_size(e);
+			e.set_bits_bignum(&num, pos, size);
+		});
+		asm.add_external_call("prompt", |_v,e,_a|{
+			let mut input = String::new();
+			io::stdin().read_line(&mut input).expect("Invalid Input!");
+			e.input_string = "".to_string();
+
+			for line in input.lines() {
+				e.input_string.push_str(line.as_ref());
+			}
+		});
+		asm.add_external_call("inputnumlen", |v,e,_|{
+			e.validity = true;
+			let num = match gmp::mpz::Mpz::from_str(e.input_string.as_ref()) {
+				Ok(val) => val,
+				Err(_) => {
+					e.validity = false;
+					gmp::mpz::Mpz::zero()
+				}
+			};
+			let num_size = num.bit_length();
+			let pos = v.get_ptr_position(e);
+			let size = v.get_ptr_size(e);
+			e.set_bits_usize(num_size, pos, size);
+		});
+		asm.add_external_call("inputlen", |v,e,_|{
+			let len_bits = e.input_string.len() * 8;
+			let pos = v.get_ptr_position(e);
+			let size = v.get_size(e);
+			e.set_bits_usize(len_bits, pos, size);
+		});
+		asm.add_external_call("input", |v,e,_|{
+			let boolvec = str_to_boolvec(e.input_string.as_ref());
+			let pos = v.get_ptr_position(e);
+			let size = v.get_size(e);
+			e.set_bits_boolvec(boolvec.as_slice(), pos, size);
+		});
+		asm.add_external_call("inputnum", |v,e,_|{
+			e.validity = true;
+			let num = match gmp::mpz::Mpz::from_str(e.input_string.as_ref()) {
+				Ok(val) => val,
+				Err(_) => {
+					e.validity = false;
+					gmp::mpz::Mpz::zero()
+				}
+			};
+			let pos = v.get_ptr_position(e);
+			let size = v.get_size(e);
+			e.set_bits_bignum(&num, pos, size);
+		});
+
+		asm.add_external_call("random", move |v,e,_|{
+			let val = v.get_bignum(e);
+			let result = e.randstate.urandom(&val);
+			let pos = v.get_ptr_position(e);
+			let size = v.get_ptr_size(e);
+			e.set_bits_bignum(&result, pos, size);
+		});
+	}
+
 	pub fn new(do_print_parsed: bool) -> Assembler {
-		Assembler {
+		let mut asm = Assembler {
 			code:         Vec::new(),
 			labels:       HashMap::new(),
 			defines:      Vec::new(),
 			ext_calls:    HashMap::new(),
 			print_parsed: do_print_parsed
-		}
+		};
+		Assembler::add_default_external_calls(&mut asm);
+		asm
 	}
 
 	//private because reasons
