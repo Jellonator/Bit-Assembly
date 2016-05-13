@@ -211,7 +211,11 @@ For help on how to write Bit Assembly, refer to the 'doc.md' file.
 
 Usage:
     bit-asm --file {file name}.asm
-    bit-asm --text {assembly}");
+    bit-asm --text {assembly}
+
+Options:
+    --print-stack {bits}    prints stack as a sequence of bytes
+    --print-parsed          prints each line as they are parsed");
 
 	} else if args.contains_key("file") {
 		load_file(&mut asm, args.get("file").expect("This shouldnt happen"));
